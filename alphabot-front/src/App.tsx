@@ -1,18 +1,24 @@
-import './App.css'
-import Header from '@/components/Header'
-import LeftSidebar from '@/components/LeftSidebar'
-import RightMenu from '@/components/RightMenu'
-import ChatArea from '@/components/ChatArea'
 
-export default function App() {
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import './App.css';
+
+//모든 페이지 컴포넌트들 가져오기
+import WelcomePage from './pages/WelcomePage';
+import LoginPage from './pages/LoginPage';
+import MainPage from './pages/ChatPage';
+
+function App() {
   return (
-    <div className="app">
-      <Header />
-      <main className="main">
-        <LeftSidebar />
-        <ChatArea />
-        <RightMenu />
-      </main>
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<WelcomePage />} />
+
+        <Route path="/login" element={<LoginPage />} />
+
+        <Route path="/chat" element={<MainPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
+
+export default App;
