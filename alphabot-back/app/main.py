@@ -2,9 +2,6 @@ from fastapi import FastAPI
 import logging
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from aibackend.app.models import models
-from aibackend.app.core.database import engine
-from aibackend.app.routers import auth, stock_info, chat, rag, news
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
