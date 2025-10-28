@@ -10,7 +10,7 @@ from app.core import settings
 engine = create_engine(settings.database_url, connect_args={"check_same_thread": False}, future=True, echo=False)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False, future=True)
 
-
+ 
 def get_db():
     """FastAPI dependency that yields a database session."""
     db = SessionLocal()

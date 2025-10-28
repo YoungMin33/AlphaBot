@@ -13,3 +13,4 @@ class Category(Base):
 
     def __repr__(self):
         return f"<Category(id={self.category_id}, title='{self.title}')>"
+ 
