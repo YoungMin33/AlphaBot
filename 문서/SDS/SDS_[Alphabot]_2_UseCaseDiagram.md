@@ -8,6 +8,9 @@
 **Scope / Level**  
 : <Scope>, <Level>
 
+**Author / Last Updated**  
+: <Author>, <Last Updated>
+
 **Actors**  
 : Primary – <>, Secondary – <>
 
@@ -35,6 +38,13 @@
 **Related**
 - Performance: ≤ n s / Frequency: / Concurrency: / Due Date:
 
+
+
+
+
+
+
+
 ### Use Case #예제 : 종목 검색
 
 **Summary**  
@@ -42,6 +52,9 @@
 
 **Scope / Level**  
 : 종목 정보 조회 및 관리, User level
+
+**Author / Last Updated**  
+: 김지광(예제), 2025-10-29
 
 **Actors**  
 : Primary – 인증 사용자  
