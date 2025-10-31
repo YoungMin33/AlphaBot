@@ -85,8 +85,9 @@ sequenceDiagram
     E->>E: wait next tick
   end
 
-
+```mermaid
 sequenceDiagram
 A->>+B: B야 소금좀 건내줘
 B->>+A: 여기
 A-->>-B: 고마워
+```
