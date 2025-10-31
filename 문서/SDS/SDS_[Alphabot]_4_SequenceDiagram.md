@@ -20,3 +20,22 @@ sequenceDiagram
   else 실패
     S-->>W: error
   end
+
+sequenceDiagram
+    participant User
+    participant WebServer
+    participant Database
+
+    User->>WebServer: 로그인 요청 (ID, PW)
+    activate WebServer
+    WebServer->>Database: 사용자 정보 조회
+    activate Database
+    Database-->>WebServer: 사용자 정보 반환
+    deactivate Database
+    WebServer->>WebServer: 비밀번호 일치 확인
+    alt 비밀번호 일치
+        WebServer-->>User: 로그인 성공
+    else 비밀번호 불일치
+        WebServer-->>User: 로그인 실패
+    end
+    deactivate WebServer
