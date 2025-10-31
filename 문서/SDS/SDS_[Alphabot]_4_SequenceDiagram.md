@@ -84,3 +84,9 @@ sequenceDiagram
   else Not yet
     E->>E: wait next tick
   end
+
+
+sequenceDiagram
+A->>+B: B야 소금좀 건내줘
+B->>+A: 여기
+A-->>-B: 고마워
