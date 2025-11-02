@@ -136,3 +136,61 @@ sequenceDiagram
 사용자가 특정 채팅방의 '삭제' 옵션을 클릭한다. → 프론트엔드가 "이 채팅방을 삭제하시겠습니까?" 팝업을 표시한다.  
 → (삭제 선택) 사용자가 팝업의 "삭제" 버튼을 클릭하면, 프론트엔드는 백엔드에 채팅방 삭제를 요청한다. → (1. 삭제 성공) 백엔드가 DB 상태를 '휴지통'으로 성공적으로 업데이트하면, 프론트엔드는 목록에서 채팅방을 제거하고 "채팅방이 휴지통으로 이동되었습니다" 알림을 표시한다. → (2. 삭제 실패) DB 오류 등으로 백엔드 처리가 실패하면, "채팅방 삭제에 실패했습니다" 오류 알림이 표시된다.  
 → (취소 선택) 사용자가 팝업의 "취소" 버튼을 클릭하면, 팝업이 닫히고 "채팅방 삭제가 취소되었습니다" 알림이 표시된다.
+
+
+## 3. 검색 기록
+
+### 3.1 검색 기록 조회
+```mermaid
+sequenceDiagram
+participant User
+participant SearchScreen
+participant SearchController
+participant HistoryDatabase
+
+User->>SearchScreen: clickSearchBox
+activate SearchScreen
+SearchScreen->>SearchController: loadSearchHistory
+activate SearchController
+SearchController->>HistoryDatabase: getHistory(userId)
+activate HistoryDatabase
+HistoryDatabase-->>SearchController: return history list
+deactivate HistoryDatabase
+SearchController-->>SearchScreen: (history list)
+deactivate SearchController
+alt historyList is not empty
+SearchScreen->>SearchScreen: displayHistory(historyList)
+else historyList is empty
+SearchScreen->>SearchScreen: displayNoHistoryMessage
+end
+SearchScreen-->>User: Show history list or message
+deactivate SearchScreen
+```
+
+사용자가 검색창을 누르면, 검색 화면이 컨트롤러에 기록 조회를 요청 → 컨트롤러는 데이터베이스에서 기록을 조회 → 데이터베이스에서 기록 목록을 반환받으면 → 화면에 기록 목록 또는 "기록 없음" 메시지를 표시한다.
+
+### 3.2 검색 기록 삭제
+```mermaid
+sequenceDiagram
+participant User
+participant SearchScreen
+participant SearchController
+participant HistoryDatabase
+
+User->>SearchScreen: clickDeleteItem(itemId)
+activate SearchScreen
+SearchScreen->>SearchController: deleteHistoryItem(itemId)
+activate SearchController
+SearchController->>HistoryDatabase: deleteItem(itemId)
+activate HistoryDatabase
+HistoryDatabase-->>SearchController: success
+deactivate HistoryDatabase
+deactivate SearchController
+SearchScreen->>SearchScreen: removeItemFromList(itemId)
+SearchScreen-->>User: List updated
+deactivate SearchScreen
+```
+
+사용자가 특정 기록의 삭제를 누르면, 검색 화면이 컨트롤러에 삭제를 요청하고 → 컨트롤러는 데이터베이스에서 해당 항목을 삭제한다 → 데이터베이스로부터 성공 응답이 오면 → 화면에서 해당 항목을 제거하여 목록을 갱신한다.
+
+위 형식에 맞춰서 아래에 시퀀스 다이아그램을 작성해주세요.
