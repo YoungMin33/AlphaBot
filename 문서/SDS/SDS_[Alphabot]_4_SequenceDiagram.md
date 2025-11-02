@@ -264,4 +264,148 @@ deactivate SearchScreen
 
 사용자가 특정 기록의 삭제를 누르면, 검색 화면이 컨트롤러에 삭제를 요청하고 → 컨트롤러는 데이터베이스에서 해당 항목을 삭제한다 → 데이터베이스로부터 성공 응답이 오면 → 화면에서 해당 항목을 제거하여 목록을 갱신한다.
 
+
+
+
+## 5 계정관리
+
+### 5.1 로그인
+```mermaid
+sequenceDiagram
+    actor 사용자 as 사용자 (User)
+    participant Frontend as 프론트엔드 (UI)
+    participant Backend as 백엔드 (Server)
+    participant DB as 데이터베이스
+
+    사용자 ->> Frontend: 아이디, 비밀번호 입력 후 '로그인' 버튼 클릭
+    Frontend ->> Backend: API 요청: 로그인 (credentials)
+    Backend ->> DB: 사용자 정보 확인 (userId, hashedPassword)
+
+    alt 인증 성공
+        DB -->> Backend: 사용자 정보 반환
+        Backend ->> Backend: 세션(토큰) 생성
+        Backend -->> Frontend: 성공 응답 (200 OK, token)
+        Frontend ->> Frontend: 세션(토큰) 저장 및 메인 화면으로 전환
+        Frontend -->> 사용자: 메인 화면 표시
+    else 인증 실패
+        DB -->> Backend: 사용자 정보 없음 (null)
+        Backend -->> Frontend: 실패 응답 (401 Unauthorized)
+        Frontend -->> 사용자: "아이디 또는 비밀번호가 올바르지 않습니다" 알림 표시
+    end
+```
+
+사용자가 아이디와 비밀번호를 입력하고 로그인 버튼을 클릭한다 → 프론트엔드는 백엔드로 로그인 API를 요청한다 → 백엔드는 데이터베이스에서 사용자 정보를 검증한다 → (1. 인증 성공) 백엔드는 세션(토큰)을 생성하여 프론트엔드에 전달하고, 프론트엔드는 사용자를 메인 화면으로 이동시킨다 → (2. 인증 실패) 백엔드가 실패 응답을 보내면, 프론트엔드는 사용자에게 오류 알림을 표시한다.
+
+### 5.2 회원가입
+
+```mermaid
+sequenceDiagram
+    actor 사용자 as 사용자 (User)
+    participant Frontend as 프론트엔드 (UI)
+    participant Backend as 백엔드 (Server)
+    participant DB as 데이터베이스
+
+    사용자 ->> Frontend: 회원가입 정보 입력 후 '가입하기' 버튼 클릭
+    Frontend ->> Backend: API 요청: 회원가입 (userData)
+    Backend ->> DB: 아이디(또는 이메일) 중복 확인
+
+    alt 아이디 사용 가능
+        DB -->> Backend: 중복 없음
+        Backend ->> Backend: 비밀번호 암호화
+        Backend ->> DB: 신규 사용자 정보 저장
+        DB -->> Backend: 저장 성공
+        Backend -->> Frontend: 성공 응답 (201 Created)
+        Frontend ->> Frontend: 로그인 화면으로 전환
+        Frontend -->> 사용자: "회원가입이 완료되었습니다" 알림 표시
+    else 아이디 중복
+        DB -->> Backend: 중복된 아이디 존재
+        Backend -->> Frontend: 실패 응답 (409 Conflict)
+        Frontend -->> 사용자: "이미 사용 중인 아이디입니다" 알림 표시
+    end
+```
+
+사용자가 회원가입 양식에 정보를 모두 입력하고 '가입하기' 버튼을 클릭한다 → 프론트엔드는 백엔드로 회원가입 API를 요청한다 → 백엔드는 먼저 데이터베이스에서 아이디 중복 여부를 확인한다 → (1. 가입 가능) 중복된 아이디가 없으면, 비밀번호를 암호화하여 DB에 저장하고 성공 응답을 보낸다. 프론트엔드는 로그인 화면으로 전환하며 성공 알림을 표시한다 → (2. 가입 불가) 이미 사용 중인 아이디일 경우, 백엔드가 실패 응답을 보내고 프론트엔드는 사용자에게 중복 알림을 표시한다.
+
+
+
+### 5.3 로그아웃
+
+```mermaid
+sequenceDiagram
+    actor 사용자 as 사용자 (User)
+    participant Frontend as 프론트엔드 (UI)
+    participant Backend as 백엔드 (Server)
+
+    사용자 ->> Frontend: '로그아웃' 버튼 클릭
+    Frontend ->> Backend: API 요청: 로그아웃
+    
+    alt 로그아웃 성공
+        Backend -->> Frontend: 성공 응답 (200 OK)
+        Frontend ->> Frontend: 로컬 저장소의 세션(토큰) 삭제
+        Frontend ->> Frontend: 로그인 화면으로 전환
+        Frontend -->> 사용자: 로그인 화면 표시
+    else 로그아웃 실패
+        Backend -->> Frontend: 실패 응답 (500 Internal Server Error)
+        Frontend -->> 사용자: "로그아웃에 실패했습니다" 오류 알림 표시
+    end
+```
+로그인된 사용자가 '로그아웃' 버튼을 클릭한다 → 프론트엔드는 백엔드에 로그아웃 API를 요청한다 → (1. 성공 시) 백엔드가 세션을 무효화하고 성공 응답을 보내면, 프론트엔드는 로컬에 저장된 사용자 인증 정보를 삭제하고 로그인 화면으로 이동한다 → (2. 실패 시) 서버 오류 등으로 실패 응답을 받으면, 사용자에게 오류 알림을 표시한다.
+
+
+### 5.4 프로필 수정
+
+```mermaid
+sequenceDiagram
+    actor 사용자 as 사용자 (User)
+    participant Frontend as 프론트엔드 (UI)
+    participant Backend as 백엔드 (Server)
+    participant DB as 데이터베이스
+    
+    사용자 ->> Frontend: 프로필 정보(닉네임 등) 변경 후 '저장' 버튼 클릭
+    Frontend ->> Backend: API 요청: 프로필 업데이트 (updatedData)
+
+    alt 업데이트 성공
+        Backend ->> DB: 사용자 정보 업데이트
+        DB -->> Backend: 업데이트 성공
+        Backend -->> Frontend: 성공 응답 (200 OK)
+        Frontend ->> Frontend: UI에 변경된 정보 반영
+        Frontend -->> 사용자: "프로필 정보가 성공적으로 변경되었습니다" 알림 표시
+    else 업데이트 실패
+        Backend -->> Frontend: 실패 응답 (500 Internal Server Error)
+        Frontend -->> 사용자: "정보 수정에 실패했습니다" 오류 알림 표시
+    end
+```
+
+사용자가 마이페이지 등에서 자신의 프로필 정보를 수정한 후 '저장' 버튼을 클릭한다 → 프론트엔드는 변경된 정보를 백엔드에 업데이트 요청한다 → (1. 성공 시) 백엔드가 데이터베이스의 사용자 정보를 성공적으로 업데이트하면, 프론트엔드는 화면을 갱신하고 사용자에게 성공 알림을 표시한다 → (2. 실패 시) 데이터베이스 오류 등으로 실패하면, 사용자에게 오류 알림을 표시한다.
+
+
+### 5.5 비밀번호 변경
+
+```mermaid
+sequenceDiagram
+    actor 사용자 as 사용자 (User)
+    participant Frontend as 프론트엔드 (UI)
+    participant Backend as 백엔드 (Server)
+    participant DB as 데이터베이스
+
+    사용자 ->> Frontend: 현재 비밀번호, 새 비밀번호 입력 후 '변경' 버튼 클릭
+    Frontend ->> Backend: API 요청: 비밀번호 변경 (passwordData)
+    Backend ->> DB: 현재 비밀번호 일치 여부 확인
+
+    alt 현재 비밀번호 일치
+        DB -->> Backend: 비밀번호 일치
+        Backend ->> Backend: 새 비밀번호 암호화
+        Backend ->> DB: 새 비밀번호로 업데이트
+        DB -->> Backend: 업데이트 성공
+        Backend -->> Frontend: 성공 응답 (200 OK)
+        Frontend -->> 사용자: "비밀번호가 성공적으로 변경되었습니다" 알림 표시
+    else 현재 비밀번호 불일치
+        DB -->> Backend: 비밀번호 불일치
+        Backend -->> Frontend: 실패 응답 (400 Bad Request)
+        Frontend -->> 사용자: "현재 비밀번호가 일치하지 않습니다" 오류 알림 표시
+    end
+```
+
+사용자가 현재 비밀번호와 새로 사용할 비밀번호를 입력하고 '변경' 버튼을 클릭한다 → 프론트엔드는 백엔드에 비밀번호 변경을 요청한다 → 백엔드는 먼저 데이터베이스에서 사용자가 입력한 현재 비밀번호가 올바른지 검증한다 → (1. 일치 시) 현재 비밀번호가 맞으면 새 비밀번호를 암호화하여 DB에 업데이트하고, 프론트엔드는 사용자에게 성공 알림을 표시한다 → (2. 불일치 시) 현재 비밀번호가 틀리면 백엔드가 실패 응답을 보내고, 프론트엔드는 사용자에게 오류 알림을 표시한다
+
 위 형식에 맞춰서 아래에 시퀀스 다이아그램을 작성해주세요.
