@@ -39,7 +39,78 @@ sequenceDiagram
 
 위 형식에 맞춰서 아래에 시퀀스 다이아그램을 작성해주세요.
 
+## 1
 
+### 1.1 종목 상세 정보 조회
+```mermaid
+sequenceDiagram
+    actor User
+    participant StockSearchFragment as StockSearchFragment [종목 분석 영역]
+    participant StockViewModel
+    participant StockRepository
+    participant ExternalAPI as ExternalAPI [외부 금융 API]
+
+    User->>StockSearchFragment: 검색창에 종목 입력 & 확정
+    StockSearchFragment->>StockViewModel: loadStockDetails(ticker)
+    StockViewModel->>StockRepository: fetchRealtime(ticker)
+    StockRepository->>ExternalAPI: 실시간 데이터 요청
+    ExternalAPI-->>StockRepository: 데이터 응답 (상세 시세)
+    StockRepository-->>StockViewModel: 데이터 반환
+    StockViewModel-->>StockSearchFragment: 상세 정보 표시 완료 (update UI)
+    StockSearchFragment-->>User: 상세 정보 표시 완료
+```
+
+사용자가 챗봇 대화창에서 종목 분석 영역을 활성화하거나 버튼을 누른다 → 분석 영역 내 검색창에서 종목명 또는 코드를 입력하고 선택한다 → 상세 정보 탭에 현재가, 등락률, 거래량 등 실시간 시세 정보가 표시된다.
+
+### 1.2 재무제표 조회
+```mermaid
+sequenceDiagram
+    actor User
+    participant StockSearchFragment as StockSearchFragment [종목 분석 영역]
+    participant StockViewModel
+    participant StockRepository
+    participant ExternalAPI as ExternalAPI [외부 금융 API]
+
+    Note over StockSearchFragment: '상세 정보' 탭에서 재무제표 탭으로 전환
+    User->>StockSearchFragment: 재무제표 탭 클릭
+    StockSearchFragment->>StockViewModel: loadFinancials(ticker)
+    StockViewModel->>StockRepository: fetchFinancials(ticker)
+    StockRepository->>ExternalAPI: 재무 데이터 요청
+    ExternalAPI-->>StockRepository: 데이터 응답 (재무제표 데이터)
+    StockRepository-->>StockViewModel: 데이터 반환
+    StockViewModel-->>StockSearchFragment: 재무제표 표시 완료 (update UI)
+    StockSearchFragment-->>User: 재무제표 표시 완료
+```
+
+사용자가 종목 분석 영역에서 재무제표 탭을 클릭한다 → 시스템은 해당 종목의 최신 재무제표 데이터를 조회한다 → 재무 상태표, 손익계산서 등의 데이터가 표와 그래프로 화면에 출력된다.
+
+### 1.3 휴지통 관리
+```mermaid
+sequenceDiagram
+    participant User
+    participant SidebarFragment
+    participant SidebarViewModel
+    participant ItemRepository
+    participant LocalDB
+    User->>SidebarFragment: '휴지통' 메뉴 클릭
+    SidebarFragment->>SidebarViewModel: getTrashBinList()
+    SidebarViewModel->>ItemRepository: findDeletedItems()
+    ItemRepository->>LocalDB: SELECT WHERE DELETE_FLAG = TRUE
+    LocalDB-->>ItemRepository: 항목 목록 반환
+    ItemRepository-->>SidebarViewModel: 항목 목록 반환
+    SidebarViewModel->>SidebarFragment: updateTrashBinList()
+    SidebarFragment-->>User: 휴지통 목록 표시
+    User->>SidebarFragment: 항목 선택 및 '복원' 버튼 클릭
+    SidebarFragment->>SidebarViewModel: restoreItem(itemId)
+    SidebarViewModel->>ItemRepository: restoreItem(itemId)
+    ItemRepository->>LocalDB: UPDATE DELETE_FLAG = FALSE
+    LocalDB-->>ItemRepository: 성공 코드 반환
+    Note over SidebarViewModel: 목록 LiveData 갱신
+    SidebarViewModel->>SidebarFragment: updateTrashBinList()
+    SidebarFragment-->>User: 갱신된 목록 표시
+```
+
+사용자가 사이드바에서 휴지통 메뉴를 클릭한다 → 삭제된 대화 기록 및 저장된 답변 목록을 확인한다 → 원하는 항목을 선택하고 복원 또는 영구 삭제 버튼을 누른다 → 목록이 갱신된다.
 
 ## 2
 
