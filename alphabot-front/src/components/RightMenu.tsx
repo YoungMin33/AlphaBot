@@ -1,22 +1,37 @@
-// src/App.tsx
-
-import React from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from './Button/Button'; 
-import { FaBars, FaHistory, FaTrash } from 'react-icons/fa'; 
+import { FaBars, FaHistory, FaTrash, FaUser, FaSignOutAlt, FaBookmark } from 'react-icons/fa';
+import StockSearch from './StockSearch';
 
-function App() {
-  const handleButtonClick = (buttonName: string) => {
-    alert(`${buttonName} 버튼 클릭!`);
-    console.log(`${buttonName} 버튼이 클릭되었습니다.`);
+interface RightMenuProps {
+  onSelectStock?: (stock: any) => void;
+}
+
+export default function RightMenu({ onSelectStock }: RightMenuProps) {
+  const navigate = useNavigate();
+  const [showStockSearch, setShowStockSearch] = useState(false);
+
+  const handleLogout = () => {
+    if (window.confirm('로그아웃 하시겠습니까?')) {
+      alert('로그아웃되었습니다.');
+      navigate('/login');
+    }
+  };
+
+  const handleStockSelect = (stock: any) => {
+    if (onSelectStock) {
+      onSelectStock(stock);
+    }
+    setShowStockSearch(false);
   };
 
   return (
-    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-      
+    <aside className="sidebar right">
       <Button 
         variant="primary" 
         size="medium" 
-        onClick={() => handleButtonClick('카테고리')}
+        onClick={() => navigate('/bookmarks')}
       >
         <FaBars /> 카테고리
       </Button>
@@ -24,21 +39,48 @@ function App() {
       <Button 
         variant="secondary" 
         size="medium" 
-        onClick={() => handleButtonClick('채팅 기록')}
+        onClick={() => setShowStockSearch(!showStockSearch)}
       >
-        <FaHistory /> 채팅 기록
+        <FaHistory /> {showStockSearch ? '검색 닫기' : '종목 검색'}
       </Button>
+      
+      {showStockSearch && (
+        <div style={{ marginTop: '12px' }}>
+          <StockSearch onSelectStock={handleStockSelect} />
+        </div>
+      )}
       
       <Button 
         variant="ghost" 
         size="medium" 
-        onClick={() => handleButtonClick('휴지통')}
+        onClick={() => navigate('/trash')}
       >
         <FaTrash /> 휴지통
       </Button>
 
-    </div>
+      <Button 
+        variant="secondary" 
+        size="medium" 
+        onClick={() => navigate('/mypage')}
+      >
+        <FaUser /> 마이페이지
+      </Button>
+
+      <Button 
+        variant="primary" 
+        size="medium" 
+        onClick={() => navigate('/bookmarks')}
+      >
+        <FaBookmark /> 저장된 메시지
+      </Button>
+
+      <Button 
+        variant="ghost" 
+        size="medium" 
+        onClick={handleLogout}
+      >
+        <FaSignOutAlt /> 로그아웃
+      </Button>
+    </aside>
   );
 }
-
-export default App;
