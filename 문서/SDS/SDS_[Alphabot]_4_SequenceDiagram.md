@@ -857,14 +857,15 @@ sequenceDiagram
     
     ShareService->>ExternalShareAPI: sendToPlatform(shareFile)
     activate ExternalShareAPI
-    ExternalShareAPI-->>ShareService: success()
+    ExternalShareAPI-->>ShareService: successs()
     deactivate ExternalShareAPI
     
     ShareService-->>ChatController: shareCompleted()
     deactivate ShareService
     
     ChatController->>User: shareCompletedMessage
-    deactivate ChatController
+    deactivate ChatController 
+
 ```
 
 
