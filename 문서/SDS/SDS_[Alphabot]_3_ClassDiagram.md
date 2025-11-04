@@ -47,7 +47,7 @@ classDiagram
 
 ---
 
-#클래스 다이어그램: User
+##클래스 다이어그램: User
 
 ```mermaid
 classDiagram
@@ -108,11 +108,417 @@ classDiagram
 
 ---
 
+## 데이터 타입: Class Diagram
+```mermaid
+classDiagram
+    direction LR
+
+    %% --- User & Auth Schemas ---
+    class UserBase {
+        +str login_id
+        +str username
+    }
+    class UserCreate {
+        +str password
+    }
+    UserCreate --|> UserBase
+    class UserUpdate {
+        +Optional[str] username
+    }
+    class PasswordChange {
+        +str current_password
+        +str new_password
+        +str new_password_confirm
+        +passwords_match()
+    }
+    class UserInDB {
+        +int user_id
+        +str hashed_pw
+    }
+    UserInDB --|> UserBase
+    class User {
+        +int user_id
+    }
+    User --|> UserBase
+
+    class Token {
+        +str access_token
+        +str token_type
+    }
+    class TokenData {
+        +str | None username
+    }
+    class LoginRequest {
+        +str login_id
+        +str password
+    }
+
+    %% --- Chat & Message Schemas ---
+    class ChatCreate {
+        +str title
+    }
+    class ChatUpdate {
+        +Optional[str] title
+        +Optional[str] trash_can
+    }
+    class ChatRead {
+        +int chat_id
+        +str title
+        +datetime created_at
+        +Optional[datetime] lastchat_at
+        +str trash_can
+    }
+    class ChatList {
+        +list[ChatRead] chats
+        +int total
+        +int page
+        +int page_size
+        +int total_pages
+    }
+    ChatList *-- "many" ChatRead : chats
+
+    class MessageCreate {
+        +str content
+    }
+    class MessageRead {
+        +int messages_id
+        +str content
+        +int user_id
+        +int chat_id
+        +str role
+        +datetime created_at
+    }
+    class MessageList {
+        +list[MessageRead] messages
+        +int total
+        +int page
+        +int page_size
+        +int total_pages
+    }
+    MessageList *-- "many" MessageRead : messages
+
+    %% --- Category Schemas ---
+    class CategoryBase {
+        +str title
+        +str description
+    }
+    class CategoryCreate {
+    }
+    CategoryCreate --|> CategoryBase
+    class CategoryUpdate {
+        +Optional[str] title
+        +Optional[str] description
+    }
+    class CategoryInDB {
+        +int category_id
+        +datetime created_at
+    }
+    CategoryInDB --|> CategoryBase
+    class Category {
+    }
+    Category --|> CategoryInDB
+    class CategoryList {
+        +list[Category] categories
+        +int total
+        +int page
+        +int page_size
+        +int total_pages
+    }
+    CategoryList *-- "many" Category : categories
+
+    %% --- Bookmark Schemas ---
+    class BookmarkCreate {
+        +int messages_id
+        +Optional[int] category_id
+    }
+    class BookmarkRead {
+        +int bookmark_id
+        +int user_id
+        +int messages_id
+        +Optional[int] category_id
+        +datetime created_at
+    }
+    class BookmarkList {
+        +list[BookmarkRead] bookmarks
+        +int total
+        +int page
+        +int page_size
+        +int total_pages
+    }
+    BookmarkList *-- "many" BookmarkRead : bookmarks
+
+    %% --- Relationships based on IDs ---
+    User "1" -- "many" MessageRead : "writes"
+    User "1" -- "many" BookmarkRead : "has"
+    ChatRead "1" -- "many" MessageRead : "contains"
+    MessageRead "1" -- "many" BookmarkRead : "is bookmarked by"
+    Category "1" -- "many" BookmarkRead : "categorizes"
+```
+---
+
+## User (사용자) 스키마
+
+### UserBase
+**Class Description** : 사용자의 기본 공통 속성을 위한 Base 스키마입니다.
+
+**Attributes**
+* **login_id** *(str)*: 로그인 아이디 (min 4, max 50).
+* **username** *(str)*: 사용자 이름 (min 2, max 50).
+
+---
+
+### UserCreate
+**Class Description** : 회원가입 시 요청에 사용할 스키마입니다. (UserBase 상속)
+
+**Attributes**
+* *(Inherited)* **login_id**, **username**
+* **password** *(str)*: 비밀번호 (min 8).
+
+---
+
+### UserUpdate
+**Class Description** : 프로필 수정 시 요청에 사용할 스키마입니다.
+
+**Attributes**
+* **username** *(Optional[str])*: 사용자 이름 (min 2, max 50).
+
+---
+
+### PasswordChange
+**Class Description** : 비밀번호 변경 시 요청에 사용할 스키마입니다.
+
+**Attributes**
+* **current_password** *(str)*: 현재 비밀번호 (min 8).
+* **new_password** *(str)*: 새 비밀번호 (min 8).
+* **new_password_confirm** *(str)*: 새 비밀번호 확인 (min 8).
+
+**Operations**
+* **passwords_match** *(validator)*: `new_password`와 `new_password_confirm` 필드가 일치하는지 검증합니다.
+
+---
+
+### UserInDB
+**Class Description** : DB에서 읽어온 데이터를 위한 스키마 (내부 로직용). (UserBase 상속)
+
+**Attributes**
+* *(Inherited)* **login_id**, **username**
+* **user_id** *(int)*: 사용자 고유 ID.
+* **hashed_pw** *(str)*: 해시된 비밀번호.
+
+---
+
+### User
+**Class Description** : API 응답으로 클라이언트에게 반환할 스키마 (내 정보 조회). (UserBase 상속)
+
+**Attributes**
+* *(Inherited)* **login_id**, **username**
+* **user_id** *(int)*: 사용자 고유 ID.
+
+---
+---
+
+## Auth & Token (인증) 스키마
+
+### Token
+**Class Description** : 로그인 성공 시 반환되는 JWT 토큰 응답 스키마입니다.
+
+**Attributes**
+* **access_token** *(str)*: 접근 토큰.
+* **token_type** *(str)*: 토큰 타입 (예: "bearer").
+
+---
+
+### TokenData
+**Class Description** : JWT 토큰 내부에 저장되는 데이터 스키마입니다.
+
+**Attributes**
+* **username** *(Optional[str])*: 사용자 이름.
+
+---
+
+### LoginRequest
+**Class Description** : JSON 기반 로그인 요청 스키마 (OAuth2PasswordRequestForm 대안 옵션).
+
+**Attributes**
+* **login_id** *(str)*: 로그인 아이디 (min 4, max 50).
+* **password** *(str)*: 비밀번호 (min 8).
+
+---
+---
+
+## Chat & Message (채팅) 스키마
+
+### ChatCreate
+**Class Description** : 새 채팅방 생성을 위한 요청 스키마입니다.
+
+**Attributes**
+* **title** *(str)*: 채팅방 제목 (min 1, max 100).
+
+---
+
+### ChatUpdate
+**Class Description** : 채팅방 정보 수정을 위한 요청 스키마입니다.
+
+**Attributes**
+* **title** *(Optional[str])*: 새 채팅방 제목 (min 1, max 100).
+* **trash_can** *(Optional[str])*: 휴지통 상태 (in 또는 out).
+
+---
+
+### ChatRead
+**Class Description** : 채팅방 정보 조회를 위한 응답 스키마입니다.
+
+**Attributes**
+* **chat_id** *(int)*: 채팅방 고유 ID.
+* **title** *(str)*: 채팅방 제목.
+* **created_at** *(datetime)*: 생성 시각.
+* **lastchat_at** *(Optional[datetime])*: 마지막 대화 시각.
+* **trash_can** *(str)*: 휴지통 상태.
+
+---
+
+### ChatList
+**Class Description** : 채팅방 목록 응답 스키마 (페이지네이션).
+
+**Attributes**
+* **chats** *(list[ChatRead])*: 채팅방 목록.
+* **total** *(int)*: 전체 항목 수.
+* **page** *(int)*: 현재 페이지 번호.
+* **page_size** *(int)*: 페이지 당 항목 수.
+* **total_pages** *(int)*: 전체 페이지 수.
+
+---
+
+### MessageCreate
+**Class Description** : 새 메시지 생성을 위한 요청 스키마 (POST /api/rooms/{room_id}/messages).
+
+**Attributes**
+* **content** *(str)*: 메시지 내용.
+
+---
+
+### MessageRead
+**Class Description** : 메시지 조회를 위한 응답 스키마 (GET /api/rooms/{room_id}/messages).
+
+**Attributes**
+* **messages_id** *(int)*: 메시지 고유 ID.
+* **content** *(str)*: 메시지 내용.
+* **user_id** *(int)*: 작성한 사용자 ID.
+* **chat_id** *(int)*: 메시지가 속한 채팅방 ID.
+* **role** *(str)*: 메시지 주체 (user 또는 assistant).
+* **created_at** *(datetime)*: 생성 시각.
+
+---
+
+### MessageList
+**Class Description** : 메시지 목록 응답 스키마 (페이지네이션).
+
+**Attributes**
+* **messages** *(list[MessageRead])*: 메시지 목록.
+* **total** *(int)*: 전체 항목 수.
+* **page** *(int)*: 현재 페이지 번호.
+* **page_size** *(int)*: 페이지 당 항목 수.
+* **total_pages** *(int)*: 전체 페이지 수.
+
+---
+---
+
+## Category (카테고리) 스키마
+
+### CategoryBase
+**Class Description** : 카테고리 공통 속성을 위한 기본 스키마입니다.
+
+**Attributes**
+* **title** *(str)*: 카테고리 제목 (max 50).
+* **description** *(str)*: 카테고리 설명 (max 200).
+
+---
+
+### CategoryCreate
+**Class Description** : 카테고리 생성을 위한 요청 스키마입니다. (CategoryBase 상속)
+
+**Attributes**
+* *(Inherited)* **title**, **description**
+
+---
+
+### CategoryUpdate
+**Class Description** : 카테고리 수정을 위한 요청 스키마입니다.
+
+**Attributes**
+* **title** *(Optional[str])*: 카테고리 제목 (max 50).
+* **description** *(Optional[str])*: 카테고리 설명 (max 200).
+
+---
+
+### CategoryInDB
+**Class Description** : 데이터베이스의 카테고리 스키마입니다. (CategoryBase 상속)
+
+**Attributes**
+* *(Inherited)* **title**, **description**
+* **category_id** *(int)*: 카테고리 고유 ID.
+* **created_at** *(datetime)*: 생성 시각.
+
+---
+
+### Category
+**Class Description** : 클라이언트에 카테고리 정보를 반환하기 위한 응답 스키마입니다. (CategoryInDB 상속)
+
+**Attributes**
+* *(Inherited)* **category_id**, **created_at**, **title**, **description**
+
+---
+
+### CategoryList
+**Class Description** : 카테고리 목록 응답 스키마 (페이지네이션).
+
+**Attributes**
+* **categories** *(list[Category])*: 카테고리 목록.
+* **total** *(int)*: 전체 항목 수.
+* **page** *(int)*: 현재 페이지 번호.
+* **page_size** *(int)*: 페이지 당 항목 수.
+* **total_pages** *(int)*: 전체 페이지 수.
+
+---
+---
+
+## Bookmark (북마크) 스키마
+
+### BookmarkCreate
+**Class Description** : 북마크(메시지 저장) 생성을 위한 요청 스키마입니다.
+
+**Attributes**
+* **messages_id** *(int)*: 저장할 메시지 ID.
+* **category_id** *(Optional[int])*: 카테고리 ID (없으면 미분류).
+
+---
+
+### BookmarkRead
+**Class Description** : 북마크 조회를 위한 응답 스키마입니다.
+
+**Attributes**
+* **bookmark_id** *(int)*: 북마크 고유 ID.
+* **user_id** *(int)*: 북마크한 사용자 ID.
+* **messages_id** *(int)*: 저장된 메시지 ID.
+* **category_id** *(Optional[int])*: 연결된 카테고리 ID.
+* **created_at** *(datetime)*: 생성 시각.
+
+---
+
+### BookmarkList
+**Class Description** : 북마크 목록 응답 스키마 (페이지네이션).
+
+**Attributes**
+* **bookmarks** *(list[BookmarkRead])*: 북마크 목록.
+* **total** *(int)*: 전체 항목 수.
+* **page** *(int)*: 현재 페이지 번호.
+* **page_size** *(int)*: 페이지 당 항목 수.
+* **total_pages** *(int)*: 전체 페이지 수.
+
 ---
 
 
-
-#채팅 메시지와 저장과 채팅방 삭제를 위한 class diagram
+##채팅 메시지와 저장과 채팅방 삭제를 위한 class diagram
 ```mermaid
 classDiagram
     class ChatPage {
@@ -399,7 +805,7 @@ classDiagram
 ---
 
 
-# 검색 기록: Class Diagram
+## 검색 기록: Class Diagram
 
 ```mermaid
 classDiagram
@@ -760,4 +1166,5 @@ classDiagram
 : 실제 챗봇의 대화 기록 및 항목 저장 데이터를 보관하는 로컬 데이터베이스입니다.
 
 ---
+
 
