@@ -116,12 +116,7 @@ state Main {
 
 # 5. State Machine Diagram
 
-본 장은 시스템의 상태 전이를 기술하는 **State Machine Diagram(SMD)**의 목적과 해석 방법을 설명한다.  
-[그림 5-1]은 클라이언트 UI 흐름(전면 SMD), [그림 5-2]는 네트워크/세션 흐름(배경 SMD)을 나타낸다. 두 다이어그램은 서로 다른 라이프사이클을 가지지만, **배경 SMD의 결과가 전면 SMD의 상태 갱신을 유도**한다.
-
----
-
-## 5.1 어플리케이션 SMD(전면) — [그림 5-1]
+## 5.1 어플리케이션 SMD(전면)
 
 ### 5.1.1 모델링 원칙
 - **화면=State 1:1 매핑**: `Chat`, `Stock`, `Categories`, `Records`, `Trash`, `Watchlist`, `Portfolio`, `Alerts`, `News`, `Profile` 등은 **복합(Composite) 상태**로 정의하고, 각 내부에 하위 화면/탭을 **서브 상태**로 둔다.
@@ -145,7 +140,7 @@ state Main {
 
 ---
 
-## 5.2 네트워크/세션 SMD(배경) — [그림 5-2]
+## 5.2 네트워크/세션 SMD(배경)
 
 ### 5.2.1 목적
 UI에 보이지 않는 **요청–응답–재시도–오류 표면화**를 표준화한다. 전면 SMD는 “요청을 요구하는 이벤트”만 유발하고, **배경 SMD가 성공 조건을 충족**했을 때에만 결과가 전면 SMD에 반영된다.
@@ -180,30 +175,4 @@ UI에 보이지 않는 **요청–응답–재시도–오류 표면화**를 표
 - **Transition 라벨**: 사용자 액션 또는 시스템 이벤트. 가능하면 **동사+목적어**의 짧은 영어 라벨 사용(예: `auth_ok`, `toggle`, `save`).
 - **예외 흐름 표기**: 삭제/복원/확인 다이얼로그처럼 **진입–확인–복귀** 패턴은 단방향 전이와 “원위치 복귀”를 명확히 표기.
 - **세션/보안 이벤트**: 배경 SMD의 `ForceLogout`은 전면 SMD의 `Logout → Login`을 **강제 유발**한다.
-
----
-
-## 5.5 부록: 전이 요약 테이블(발췌)
-
-| From                  | Event/Guard            | To                     | Note                         |
-|-----------------------|------------------------|------------------------|------------------------------|
-| `Init.Landing`        | to_login               | `Login`                | 초기 진입 분기               |
-| `Login`               | auth_ok                | `Main`                 | 세션 생성                    |
-| `Login`               | auth_fail              | `Login`                | 에러 표시, 입력 유지         |
-| `Main.Chat`           | search                 | `Main.Stock`           | 검색 전송 시 전환            |
-| `Stock.SearchInput`   | ok                     | `Stock.Detail`         | 결과 존재                    |
-| `Stock.SearchInput`   | none                   | `Stock.NoResult`       | 결과 없음                    |
-| `Detail.Summary`      | to_fin                 | `Detail.Financials`    | 탭 전환                      |
-| `Portfolio.PList`     | edit                   | `Portfolio.PEdit`      | 편집 진입                    |
-| `Portfolio.PEdit`     | save                   | `Portfolio.PList`      | 저장 후 목록 복귀            |
-| `Main`                | logout                 | `Logout → Login`       | 세션 파기 후 인증화면        |
-| `BG.Idle`             | api_trigger            | `BG.Fetching`          | 배경 요청 시작               |
-| `BG.Fetching`         | success                | `BG.ApplyUI → BG.Idle` | UI 반영 후 대기              |
-| `BG.Fetching`         | failure(retryable)     | `BG.RetryDecision`     | 백오프/잔여 횟수 판단        |
-| `BG.RetryDecision`    | can_retry              | `BG.Fetching`          | 재시도                       |
-| `BG.RetryDecision`    | cannot_retry           | `BG.SurfaceError`      | 사용자에게 오류 전달         |
-| `BG.SessionTimeout`   | —                      | `BG.ForceLogout`       | 무활동 타임아웃              |
-
-> 주: `BG.*`는 배경 SMD 상태를 축약 표기.
-
 ---
