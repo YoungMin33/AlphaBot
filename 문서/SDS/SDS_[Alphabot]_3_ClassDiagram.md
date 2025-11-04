@@ -397,4 +397,384 @@ classDiagram
   : 새 메시지 저장.
 
 ---
+#채팅을 위한 Chat Class diagram
+
+```mermaid
+ classDiagram
+    direction LR
+
+    %% 1. Controller & User (Start/End Points)
+    class User
+    class ChatController {
+        -NLPService nlpService
+        +FinalResponse sendMessage(query: string)
+        +void displayMessage(finalResponse: FinalResponse)
+    }
+
+    %% 2. Core NLP Service (Central Orchestrator)
+    class NLPService {
+        -AIModel aiModel
+        -APIDataConnector apiDataConnector
+        -ChatRepository chatRepository
+        +FinalResponse processQuery(query: string)
+        -Intent analyzeIntent(query: string)
+        -FinalResponse fetchDataAndGenerateResponse(intent: Intent, context: string)
+        +void saveHistory(query: string, response: string)
+    }
+
+    %% 3. Data & Model
+    class AIModel {
+        +Intent analyzeIntent(query: string)
+        +RawResponse generateResponse(query: string, context: string)
+    }
+
+    class APIDataConnector {
+        +RealTimeData fetchData(intent: Intent, stockCode: string)
+    }
+
+    class ChatRepository {
+        +void saveHistory(message: Message)
+        +ChatHistory getConversationHistory(convId: string, range: int)
+    }
+
+    %% 4. Entity/Data Objects
+    class Intent 
+    class RealTimeData
+    class RawResponse
+    class FinalResponse
+
+
+    %% Relationships (Associations / Aggregations)
+    
+    User "1" -- "1" ChatController : sends_request >
+    
+    ChatController "1" --> "1" NLPService : calls
+
+    NLPService "1" *-- "1" AIModel : aggregates (for analysis/generation)
+    NLPService "1" *-- "1" APIDataConnector : aggregates (for data lookup)
+    NLPService "1" *-- "1" ChatRepository : aggregates (for history)
+
+    AIModel "1" ..> Intent : returns_intent
+    APIDataConnector "1" ..> RealTimeData : returns_data
+    AIModel "1" ..> RawResponse : returns_raw_text
+    
+    NLPService "1" ..> FinalResponse : generates/returns
+```
+
+## ChatController
+**Class Description**  
+: 사용자 입력 메세지를 받아 적절한 서비스(NLP, Help, Share)로 라우팅하는
+시스템의 입구
+
+### Attributes
+- **db** *(Session, private)*
+
+### Operations
+- **sendMessage** *(query:string)*  
+  : 메시지 전송
+- **displayMessage** *(finalResponse:FinalResponse)*
+
+
+## NLPService
+**Class Description**  
+: 사용자 질문의 분석, 데이터 조회, 답변 생성, 기록 저장 등 질의 응답 전 과정을 조정
+
+### Attributes
+- **AIModel** 
+- **apiDataConnector**
+- **chatRepository**
+
+### Operations
+- **processQuery** *(query:string)*  
+- **analyzeIntent** *(query: string)* 
+- **fetchDataAndGenerateResponse** *(intent: Intent, context: string)*
+- **saveHistory** *(query: string, response: string)*
+
+
+## AIModel(의도 분석 및 답변 생성)
+**Class Description**  
+: 사용자 쿼리의 의도 분류 및 지식/분석 기반 답변을 생성
+
+### Attributes
+- **None**
+
+### Operations
+- **analyzeIntent** *(query: string)*
+- **generateResponse** *(query: string, context: string)*
+
+## APIDataConnector (실시간 데이터 조회)
+**Class Description**  
+: 실시간 주식 및 금융 데이터를 외부 API와 연동하여 조회.
+
+### Attributes
+- **None**
+
+### Operations
+- **fetchData** *(intent:Intent, stockCode:string)*
+
+## ChatRepository(기록 저장)
+**Class Description**  
+: 챗봇의 대화 기록(메시지)을 데이터베이스에 저장
+
+### Attributes
+- **None**
+
+### Operations
+- **saveHistory** *(message:Message)*
+
+#채팅 공유를 위한 Share Chat Class Diagram
+
+```mermaid
+classDiagram
+    direction LR
+
+    %% 1. Controller & User (Start/End Points)
+    class User
+    class ChatController {
+        +void shareRequest(conversationId: string, range: int)
+        +void shareCompletedMessage()
+    }
+
+    %% 2. Share Service (Central Orchestrator)
+    class ShareService {
+        -ChatRepository chatRepository
+        -FileGenerator fileGenerator
+        -ExternalShareAPI externalShareAPI
+        +void initiateShare(convId: string, range: int)
+        +boolean sendToPlatform(file: ShareFile, platform: String)
+        -boolean validateContent(history: ChatHistory)
+        -void shareCompleted(convId: string)
+    }
+
+    %% 3. Data & I/O
+    class ChatRepository {
+        -DBConnector dbConnector
+        +ChatHistory getConversationHistory(convId: string, range: int)
+        +void saveHistory(message: Message)
+    }
+
+    class FileGenerator {
+        -Map~String, String~ formatSetting
+        +ShareFile generateShareableFile(history: ChatHistory, format: String)
+        -byte[] formatAsImage(history: ChatHistory)
+        -String formatAsText(history: ChatHistory)
+    }
+
+    class ExternalShareAPI {
+        -Map~String, String~ platformUrl
+        -String authToken
+        +boolean sendToPlatform(file: ShareFile, platform: String)
+        +boolean checkPlatformStatus(platform: String)
+    }
+
+    %% 4. Entity/Data Objects
+    class ChatHistory {
+        -List~Message~ messages
+        +List~Message~ getMessages(range: int)
+    }
+
+    class ShareFile {
+        -String fileName
+        -String fileType
+        +byte[] getContentData()
+    }
+
+
+    %% Relationships (Associations / Aggregations)
+    
+    User "1" -- "1" ChatController : sends_request >
+    
+    ChatController "1" --> "1" ShareService : calls
+
+    ShareService "1" *-- "1" ChatRepository : aggregates (for history)
+    ShareService "1" *-- "1" FileGenerator : aggregates (for file creation)
+    ShareService "1" *-- "1" ExternalShareAPI : aggregates (for external send)
+
+    ShareService "1" ..> ChatHistory : uses
+    FileGenerator "1" -- "1" ChatHistory : generates_from <
+    ExternalShareAPI "1" -- "1" ShareFile : sends <
+```
+
+## ShareService(부가 서비스 계층 – 공유)
+**Class Description**  
+: 대화 기록을 파일로 생성하고, 외부 플랫폼으로 전송하여 공유하는 전체 프로세스를 관리하는 서비스.
+
+### Attributes
+- **fileRepository** 
+- **fileGenerator**
+- **chatRepository**
+- **externalShareAPI**
+
+### Operations
+- **initiateShare** *(convId: string, range: int)*  
+- **sendToPlatform** *(file: ShareFile, platform: String)* 
+- **validateContent** *(history: ChatHistory)*
+- **shareCompleted** *(convId: string)*
+
+## FileGenerator (데이터 처리 계층 - 파일 생성)
+**Class Description**  
+: 공유를 목적으로 대화 기록(ChatHistory)을 이미지(스크린샷), 텍스트 등 선택된 형태의 파일(ShareFile)로 변환하여 생성.
+
+### Attributes
+- **formatSetting**
+
+### Operations
+- **generateShareableFile** *(history: ChatHistory, format: String)*  
+- **formatAsImage** *(history: ChatHistory)* 
+- **formatAsText** *(history: ChatHistory)*
+
+## ExternalShareAPI (데이터 연동 계층 - 공유)
+**Class Description**  
+: 생성된 파일을 카카오톡, X, 이메일 등 외부 플랫폼으로 전송하는 인터페이스
+
+### Attributes
+- **platformUrl**
+- **authToken**
+
+### Operations
+- **sendToPlatform** *((file: ShareFile, platform: String))*  
+- **checkPlatformStatus** *((platform: String))* 
+- **handleNetworkError** *(platform: String)*
+
+## ChatRepository (데이터 접근 계층)
+**Class Description**  
+: 챗봇의 대화 기록(메시지)을 데이터베이스에 저장하고 조회하는 역할
+
+### Attributes
+- **dbConnector**
+- **tableName**
+
+### Operations
+- **saveHistory** *((message: Message))*  
+- **getConversationHistory** *(((convId: string, range: int)))* 
+- **findLastMessage** *((convId: string))*
+
+#도움말 기능을 위한 Class Diagram
+```mermaid
+classDiagram
+    direction LR
+
+    %% 1. Controller & User
+    class User {
+        +Long getUserId()
+    }
+
+    class ChatController {
+        -HelpService helpService
+        +FinalResponse helpRequest(query: string)
+        +void displayMessage(response: FinalResponse)
+    }
+
+    %% 2. Help Service (Central Orchestrator)
+    class HelpService {
+        -FAQRepository faqRepository
+        -AIGuidanceModel aiGuidanceModel
+        +FinalResponse processHelpRequest(query: string)
+        +GuidanceContent getGeneralGuide()
+        +GuidanceContent generateSpecificGuidance(query: string)
+    }
+
+    %% 3. Data & Model
+    class FAQRepository {
+        -DBConnector dbConnector
+        -String guideTable
+        +GuidanceContent getGeneralGuide()
+        +List~GuidanceContent~ searchFaqByKeyword(keyword: string)
+    }
+
+    class AIGuidanceModel {
+        -MLModel guidanceEngine
+        -Map~String, String~ functionTemplate
+        +GuidanceContent generateSpecificGuidance(query: string)
+        +List~String~ getSupportedFunctions()
+    }
+
+    %% 4. Entity/Data Objects
+    class FinalResponse {
+        -String displayMessage
+    }
+
+    class GuidanceContent {
+        -String title
+        -String content
+        -List~String~ links
+        +String getTitle()
+        +String getContent()
+        +boolean hasLinks()
+    }
+
+
+    %% Relationships (Associations / Aggregations)
+
+    ChatController "1" --> "1" HelpService : calls
+
+    HelpService "1" *-- "1" FAQRepository : aggregates (for general guide)
+    HelpService "1" *-- "1" AIGuidanceModel : aggregates (for specific guide)
+
+    ChatController "1" ..> FinalResponse : returns/uses
+    HelpService "1" ..> FinalResponse : returns
+
+    FAQRepository "1" ..> GuidanceContent : returns
+    AIGuidanceModel "1" ..> GuidanceContent : returns
+    HelpService "1" ..> GuidanceContent : processes
+```
+
+
+## 1. FAQRepository (데이터 접근 계층 - FAQ)
+
+| Class | **FAQRepository** |
+| :--- | :--- |
+| **Description** | 자주 묻는 질문(FAQ)이나 일반적인 사용 가이드라인 데이터를 저장소에서 조회하고 관리 |
+| **Attribute** | Name | Type | Visibility | Description |
+| | dbConnector | DBConnector | private | 데이터베이스 연결 객체 |
+| | guideTable | String | private | 가이드라인 정보가 저장된 테이블 |
+| **Operations** | Name | Type | Visibility | Description |
+| | getGeneralGuide | (void) | GuidanceContent | public | 일반적인 사용 가이드를 조회 |
+| | searchFaqByKeyword | (keyword: string) | List<GuidanceContent> | public | 키워드로 관련 FAQ를 검색 |
+| | getLatestUpdateDate | (void) | DateTime | public | FAQ 데이터의 최종 업데이트 시점을 조회 |
+
+---
+
+### 2. AIGuidanceModel (모델/분석 계층 - 안내 생성)
+
+| Class | **AIGuidanceModel** |
+| :--- | :--- |
+| **Description** | 특정 기능 사용법과 같은 복잡한 안내 요청에 대해 AI 모델을 사용하여 상세 설명 및 사용 예시를 생성. |
+| **Attribute** | Name | Type | Visibility | Description |
+| | guidanceEngine | MLModel | private | 안내문 생성을 위한 학습된 모델 엔진 |
+| | functionTemplate | Map<String, String> | private | 기능별 안내 템플릿 저장소 |
+| **Operations** | Name | Type | Visibility | Description |
+| | generateSpecificGuidance | (query: string) | GuidanceContent | public | 특정 기능에 대한 맞춤형 안내문을 생성 |
+| | getSupportedFunctions | (void) | List<String> | public | 안내 생성이 가능한 기능 목록을 조회 |
+| | formatExample | (functionName: String) | String | private | 특정 기능에 대한 사용 예시를 구성 |
+
+---
+
+### 3. GuidanceContent (안내/도움말 콘텐츠)
+
+| Class | **GuidanceContent** |
+| :--- | :--- |
+| **Description** | HelpService가 사용자에게 전달하는 도움말/가이드의 내용을 담는 데이터 객체 |
+| **Attribute** | Name | Type | Visibility | Description |
+| | title | String | private | 안내 메시지의 제목 |
+| | content | String | private | 안내 메시지의 상세 내용 |
+| | links | List<String> | private | 관련 추가 자료 링크 목록 |
+| **Operations** | Name | Type | Visibility | Description |
+| | getTitle | (void) | String | public | 안내문의 제목을 반환 |
+| | getContent | (void) | String | public | 안내문의 상세 내용을 반환 |
+| | hasLinks | (void) | boolean | public | 안내문에 링크가 포함되어 있는지 확인 |
+
+## 4. HelpService (부가 서비스 계층 - 도움말)
+**Class Description**  
+: 사용자 요청을 처리하여 일반 가이드(FAQ) 또는 AI 기반의 특정 기능 안내를 제공하는 서비스.
+
+### Attributes
+- **faqRepository**
+- **aiGuidanceModel**
+
+### Operations
+- **processHelpRequest** *((message: Message))*  
+- **getGeneralGuide()** 
+- **generateSpecificGuidance** *((query: string))*
+- **isSpecificQuery** *(((query: string)))*
 
