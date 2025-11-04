@@ -10,6 +10,7 @@ import ChatPage from './pages/ChatPage';
 import MyPage from './pages/MyPage';
 import BookmarkPage from './pages/BookmarkPage';
 import TrashPage from './pages/TrashPage';
+import LoginScreen from './pages/LoginScreen';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/bookmarks" element={<BookmarkPage />} />
         <Route path="/trash" element={<TrashPage />} />
+        <Route path="/login-screen" element={<LoginScreen />} />
       </Routes>
     </BrowserRouter>
   );
