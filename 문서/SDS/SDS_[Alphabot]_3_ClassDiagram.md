@@ -44,6 +44,228 @@ classDiagram
 - **getConversations** *(→ Conversation[], public)*  
   : 대화 목록 조회.
 
+---
+#클래스 다이어그램: User
+
+
+```mermaid
+classDiagram
+    class users {
+        +int user_id
+        +string login_id
+        +string username
+        +string hashed_pw
+        +datetime created_at
+    }
+    class chat {
+        +int chat_id
+        +int user_id
+        +string title
+        +datetime created_at
+        +datetime lastchat_at
+        +TrashEnum trash_can
+    }
+    class messages {
+        +int messages_id
+        +int user_id
+        +int chat_id
+        +RoleEnum role
+        +text content
+        +datetime created_at
+    }
+    class category {
+        +int category_id
+        +string title
+        +datetime created_at
+    }
+    class bookmark {
+        +int bookmark_id
+        +int user_id
+        +int messages_id
+        +int category_id
+        +datetime created_at
+    }
+    class stocks {
+        +string code
+        +string company_name
+        +string sector
+        +text business_summary
+        +numeric current_price
+        +bigint market_cap
+        +numeric pe_ratio
+        +numeric dividend_yield
+        +string recommendation
+        +datetime last_updated
+    }
+    class financial_statements {
+        +bigint id
+        +string stock_code
+        +date report_period
+        +ReportTypeEnum report_type
+        +bigint revenue
+        +bigint net_income
+        +bigint total_assets
+        +bigint total_liabilities
+        +bigint operating_cash_flow
+        +datetime created_at
+    }
+
+    users "1" -- "0..n" chat : "소유한다"
+    users "1" -- "0..n" messages : "채팅입력한다"
+    users "1" -- "0..n" bookmark : "소유한다"
+    chat "1" -- "0..n" messages : "포함한다"
+    messages "1" -- "0..n" bookmark : "저장한다"
+    category "0..1" -- "0..n" bookmark : "카테고리화한다"
+    stocks "1" -- "0..n" financial_statements : "참조한다"
+```
+
+
+## users
+**Class Description**
+: 서비스 이용자 계정 및 식별 정보를 보관합니다.
+
+### Attributes
+-   **user_id** *(int, public)*
+    : 사용자 PK.
+-   **login_id** *(string, public)*
+    : 로그인 ID (고유).
+-   **username** *(string, public)*
+    : 사용자 표시명.
+-   **hashed_pw** *(string, public)*
+    : 해시 처리된 비밀번호.
+-   **created_at** *(datetime, public)*
+    : 계정 생성 시각.
+
+---
+
+## chat
+**Class Description**
+: 사용자와 어시스턴트 간의 개별 대화(세션)를 정의합니다.
+
+### Attributes
+-   **chat_id** *(int, public)*
+    : 채팅방 PK.
+-   **user_id** *(int, public)*
+    : 채팅방 소유자 (users.user_id FK).
+-   **title** *(string, public)*
+    : 채팅방 제목.
+-   **created_at** *(datetime, public)*
+    : 채팅방 생성 시각.
+-   **lastchat_at** *(datetime, public)*
+    : 마지막 메시지 전송 시각 (NULL 가능).
+-   **trash_can** *(TrashEnum, public)*
+    : 휴지통 상태 (in/out).
+
+---
+
+## messages
+**Class Description**
+: 채팅방 내에서 사용자와 어시스턴트가 주고받은 개별 메시지를 저장합니다.
+
+### Attributes
+-   **messages_id** *(int, public)*
+    : 메시지 PK.
+-   **user_id** *(int, public)*
+    : 메시지 작성자 (users.user_id FK).
+-   **chat_id** *(int, public)*
+    : 메시지가 속한 채팅방 (chat.chat_id FK).
+-   **role** *(RoleEnum, public)*
+    : 메시지 작성 주체 (user/assistant).
+-   **content** *(text, public)*
+    : 메시지 본문 내용.
+-   **created_at** *(datetime, public)*
+    : 메시지 생성 시각.
+
+---
+
+## category
+**Class Description**
+: 북마크를 분류하기 위한 사용자 정의 카테고리입니다.
+
+### Attributes
+-   **category_id** *(int, public)*
+    : 카테고리 PK.
+-   **title** *(string, public)*
+    : 카테고리 이름.
+-   **created_at** *(datetime, public)*
+    : 카테고리 생성 시각.
+
+---
+
+## bookmark
+**Class Description**
+: 사용자가 특정 메시지(`messages`)를 저장(북마크)한 정보를 관리합니다. `users`와 `messages` 간의 연결 테이블 역할을 합니다.
+
+### Attributes
+-   **bookmark_id** *(int, public)*
+    : 북마크 PK.
+-   **user_id** *(int, public)*
+    : 북마크 소유자 (users.user_id FK).
+-   **messages_id** *(int, public)*
+    : 북마크된 메시지 (messages.messages_id FK).
+-   **category_id** *(int, public)*
+    : 북마크가 속한 카테고리 (category.category_id FK, NULL 가능).
+-   **created_at** *(datetime, public)*
+    : 북마크 생성 시각.
+
+---
+
+## stocks
+**Class Description**
+: 주식 종목의 기본 정보, 현재가, 밸류에이션 등 요약 정보를 저장합니다.
+
+### Attributes
+-   **code** *(string, public)*
+    : 종목 코드 (PK).
+-   **company_name** *(string, public)*
+    : 회사명.
+-   **sector** *(string, public)*
+    : 섹터.
+-   **business_summary** *(text, public)*
+    : 비즈니스 요약.
+-   **current_price** *(numeric, public)*
+    : 현재 주가.
+-   **market_cap** *(bigint, public)*
+    : 시가 총액.
+-   **pe_ratio** *(numeric, public)*
+    : 주가수익비율 (TTM).
+-   **dividend_yield** *(numeric, public)*
+    : 배당 수익률.
+-   **recommendation** *(string, public)*
+    : 애널리스트 투자의견.
+-   **last_updated** *(datetime, public)*
+    : 정보 마지막 갱신 시각.
+
+---
+
+## financial_statements
+**Class Description**
+: 개별 주식(`stocks`)의 분기별/연간 재무제표 데이터를 저장합니다.
+
+### Attributes
+-   **id** *(bigint, public)*
+    : 재무제표 데이터 PK.
+-   **stock_code** *(string, public)*
+    : 대상 종목 코드 (stocks.code FK).
+-   **report_period** *(date, public)*
+    : 보고서 기준일 (결산일).
+-   **report_type** *(ReportTypeEnum, public)*
+    : 보고서 유형 (Annual/Quarterly).
+-   **revenue** *(bigint, public)*
+    : 매출액.
+-   **net_income** *(bigint, public)*
+    : 당기순이익.
+-   **total_assets** *(bigint, public)*
+    : 자산 총계.
+-   **total_liabilities** *(bigint, public)*
+    : 부채 총계.
+-   **operating_cash_flow** *(bigint, public)*
+    : 영업 활동 현금 흐름.
+-   **created_at** *(datetime, public)*
+    : 데이터 생성 시각.
+
+---
+
 
 ---
 
