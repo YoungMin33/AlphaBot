@@ -751,7 +751,121 @@ deactivate SearchScreen
 
 사용자가 특정 기록의 삭제를 누르면, 검색 화면이 컨트롤러에 삭제를 요청하고 → 컨트롤러는 데이터베이스에서 해당 항목을 삭제한다 → 데이터베이스로부터 성공 응답이 오면 → 화면에서 해당 항목을 제거하여 목록을 갱신한다.
 
+## 4 채팅
 
+### 4.1 채팅 및 질의 응답
+```mermaid
+sequenceDiagram
+    actor User
+    participant ChatController
+    participant NLPService
+    participant APIDataConnector
+    participant AIModel
+    participant ChatRepository
+    
+    User->>ChatController: sendMessage(query)
+    activate ChatController
+    
+    ChatController->>NLPService: processQuery(query)
+    activate NLPService
+    NLPService->>AIModel: analyzeIntent(query)
+    activate AIModel
+    AIModel-->>NLPService: intent(e.g., 'StockPriceInquiry')
+    deactivate AIModel
+    
+    alt Intent requires real-time data
+        NLPService->>APIDataConnector: fetchData(intent, stockCode)
+        activate APIDataConnector
+        APIDataConnector-->>NLPService: realTimeData
+        deactivate APIDataConnector
+    else Intent is general knowledge/analysis
+        NLPService->>AIModel: generateResponse(query, context)
+        activate AIModel
+        AIModel-->>NLPService: rawResponse
+        deactivate AIModel
+    end
+    
+    NLPService->>ChatRepository: saveHistory(query, response)
+    activate ChatRepository
+    ChatRepository-->>NLPService: success()
+    deactivate ChatRepository
+    
+    NLPService-->>ChatController: finalResponse
+    deactivate NLPService
+    
+    ChatController->>User: displayMessage(finalResponse)
+    deactivate ChatController
+```
+### 4.2 도움말, 사용 가이드
+```mermaid
+sequenceDiagram
+    actor User
+    participant ChatController
+    participant HelpService
+    participant FAQRepository
+    participant AIGuidanceModel
+    
+    User->>ChatController: helpRequest(query/buttonClick)
+    activate ChatController
+    
+    ChatController->>HelpService: processHelpRequest(query)
+    activate HelpService
+    
+    alt General Help Request (e.g., "도움말")
+        HelpService->>FAQRepository: getGeneralGuide()
+        activate FAQRepository
+        FAQRepository-->>HelpService: GeneralGuideContent
+        deactivate FAQRepository
+    else Specific Query (e.g., "매수 추천 사용법")
+        HelpService->>AIGuidanceModel: generateSpecificGuidance(query)
+        activate AIGuidanceModel
+        AIGuidanceModel-->>HelpService: SpecificGuidanceContent
+        deactivate AIGuidanceModel
+    end
+    
+    HelpService-->>ChatController: guidanceContent
+    deactivate HelpService
+    
+    ChatController->>User: displayGuidance(guidanceContent)
+    deactivate ChatController
+```
+### 4.3 채팅 공유
+```mermaid
+sequenceDiagram
+    actor User
+    participant ChatController
+    participant ShareService
+    participant FileGenerator
+    participant ExternalShareAPI
+    participant ChatRepository
+    
+    User->>ChatController: shareRequest(conversationId, range)
+    activate ChatController
+    
+    ChatController->>ShareService: initiateShare(conversationId, range)
+    activate ShareService
+    
+    ShareService->>ChatRepository: getConversationHistory(conversationId, range)
+    activate ChatRepository
+    ChatRepository-->>ShareService: chatHistory
+    deactivate ChatRepository
+    
+    ShareService->>FileGenerator: generateShareableFile(chatHistory)
+    activate FileGenerator
+    FileGenerator-->>ShareService: shareFile(e.g., Image/Text)
+    deactivate FileGenerator
+    
+    ShareService->>ExternalShareAPI: sendToPlatform(shareFile)
+    activate ExternalShareAPI
+    ExternalShareAPI-->>ShareService: success()
+    deactivate ExternalShareAPI
+    
+    ShareService-->>ChatController: shareCompleted()
+    deactivate ShareService
+    
+    ChatController->>User: shareCompletedMessage
+    deactivate ChatController
+```
 
 
 ## 5 계정관리
