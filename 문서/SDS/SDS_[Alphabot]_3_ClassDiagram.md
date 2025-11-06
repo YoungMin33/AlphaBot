@@ -219,9 +219,6 @@ classDiagram
 
 ---
 
-
----
-
 ## 2. 클래스 다이어그램: User 정보 및 로그인
 
 ```mermaid
@@ -514,7 +511,6 @@ classDiagram
 * **login_id** *(str)*: 로그인 아이디 (min 4, max 50).
 * **password** *(str)*: 비밀번호 (min 8).
 
----
 ---
 
 ### 3.10 ChatCreate
@@ -1190,6 +1186,8 @@ classDiagram
 - **validateContent** *(history: ChatHistory)*
 - **shareCompleted** *(convId: string)*
 
+---
+
 ### 6.2 FileGenerator (데이터 처리 계층 - 파일 생성)
 **Class Description**  
 : 공유를 목적으로 대화 기록(ChatHistory)을 이미지(스크린샷), 텍스트 등 선택된 형태의 파일(ShareFile)로 변환하여 생성.
@@ -1201,6 +1199,8 @@ classDiagram
 - **generateShareableFile** *(history: ChatHistory, format: String)*  
 - **formatAsImage** *(history: ChatHistory)* 
 - **formatAsText** *(history: ChatHistory)*
+
+---
 
 ### 6.3 ExternalShareAPI (데이터 연동 계층 - 공유)
 **Class Description**  
@@ -1215,6 +1215,8 @@ classDiagram
 - **checkPlatformStatus** *((platform: String))* 
 - **handleNetworkError** *(platform: String)*
 
+---
+
 ### 6.4 ChatRepository (데이터 접근 계층)
 **Class Description**  
 : 챗봇의 대화 기록(메시지)을 데이터베이스에 저장하고 조회하는 역할
@@ -1227,6 +1229,8 @@ classDiagram
 - **saveHistory** *((message: Message))*  
 - **getConversationHistory** *(((convId: string, range: int)))* 
 - **findLastMessage** *((convId: string))*
+
+---
 
 # 7. 도움말 기능을 위한 Class Diagram
 ```mermaid
@@ -1359,6 +1363,7 @@ classDiagram
 - **generateSpecificGuidance** *((query: string))*
 - **isSpecificQuery** *(((query: string)))*
 
+---
 
 ## 8. 검색 기록: Class Diagram
 
