@@ -71,9 +71,9 @@ classDiagram
     category "0..1" -- "0..n" bookmark : "카테고리화한다"
     stocks "1" -- "0..n" financial_statements : "참조한다"
 ```
+---
 
-
-### 2.1 users
+### 1.1 users
 **Class Description**
 : 서비스 이용자 계정 및 식별 정보를 보관합니다.
 
@@ -91,7 +91,7 @@ classDiagram
 
 ---
 
-### 2.2 chat
+### 1.2 chat
 **Class Description**
 : 사용자와 어시스턴트 간의 개별 대화(세션)를 정의합니다.
 
@@ -111,7 +111,7 @@ classDiagram
 
 ---
 
-### 2.3 messages
+### 1.3 messages
 **Class Description**
 : 채팅방 내에서 사용자와 어시스턴트가 주고받은 개별 메시지를 저장합니다.
 
@@ -131,7 +131,7 @@ classDiagram
 
 ---
 
-### 2.4 category
+### 1.4 category
 **Class Description**
 : 북마크를 분류하기 위한 사용자 정의 카테고리입니다.
 
@@ -145,7 +145,7 @@ classDiagram
 
 ---
 
-### 2.5 bookmark
+### 1.5 bookmark
 **Class Description**
 : 사용자가 특정 메시지(`messages`)를 저장(북마크)한 정보를 관리합니다. `users`와 `messages` 간의 연결 테이블 역할을 합니다.
 
@@ -163,7 +163,7 @@ classDiagram
 
 ---
 
-### 2.6 stocks
+### 1.6 stocks
 **Class Description**
 : 주식 종목의 기본 정보, 현재가, 밸류에이션 등 요약 정보를 저장합니다.
 
@@ -191,7 +191,7 @@ classDiagram
 
 ---
 
-### 2.7 financial_statements
+### 1.7 financial_statements
 **Class Description**
 : 개별 주식(`stocks`)의 분기별/연간 재무제표 데이터를 저장합니다.
 
@@ -244,6 +244,7 @@ classDiagram
     +getBookmarks(): Bookmark[]
   }
 ```
+---
 
 ### 2.1 User
 **Class Description**  
@@ -799,7 +800,7 @@ classDiagram
     ChatService --> ChatRepository
     ChatService --> MessageRepository
 ```
-
+---
 
 ### 4.1 ChatApiClient
 **Class Description**  
@@ -1028,6 +1029,7 @@ classDiagram
     
     NLPService "1" ..> FinalResponse : generates/returns
 ```
+---
 
 ### 5.1 ChatController
 **Class Description**  
@@ -1042,6 +1044,7 @@ classDiagram
   : 메시지 전송
 - **displayMessage** *(finalResponse:FinalResponse)*
 
+---
 
 ### 5.2 NLPService
 **Class Description**  
@@ -1058,6 +1061,7 @@ classDiagram
 - **fetchDataAndGenerateResponse** *(intent: Intent, context: string)*
 - **saveHistory** *(query: string, response: string)*
 
+---
 
 ### 5.3 AIModel(의도 분석 및 답변 생성)
 **Class Description**  
@@ -1070,6 +1074,8 @@ classDiagram
 - **analyzeIntent** *(query: string)*
 - **generateResponse** *(query: string, context: string)*
 
+---
+
 ### 5.4 APIDataConnector (실시간 데이터 조회)
 **Class Description**  
 : 실시간 주식 및 금융 데이터를 외부 API와 연동하여 조회.
@@ -1080,6 +1086,8 @@ classDiagram
 ### Operations
 - **fetchData** *(intent:Intent, stockCode:string)*
 
+---
+
 ### 5.5 ChatRepository(기록 저장)
 **Class Description**  
 : 챗봇의 대화 기록(메시지)을 데이터베이스에 저장
@@ -1089,6 +1097,8 @@ classDiagram
 
 ### Operations
 - **saveHistory** *(message:Message)*
+
+---
 
 # 6. 채팅 공유를 위한 Share Chat Class Diagram
 
@@ -1162,6 +1172,7 @@ classDiagram
     FileGenerator "1" -- "1" ChatHistory : generates_from <
     ExternalShareAPI "1" -- "1" ShareFile : sends <
 ```
+---
 
 ### 6.1 ShareService(부가 서비스 계층 – 공유)
 **Class Description**  
@@ -1286,7 +1297,7 @@ classDiagram
     AIGuidanceModel "1" ..> GuidanceContent : returns
     HelpService "1" ..> GuidanceContent : processes
 ```
-
+---
 
 ### 7.1 FAQRepository (데이터 접근 계층 - FAQ)
 
@@ -1331,6 +1342,8 @@ classDiagram
 | | getTitle | (void) | String | public | 안내문의 제목을 반환 |
 | | getContent | (void) | String | public | 안내문의 상세 내용을 반환 |
 | | hasLinks | (void) | boolean | public | 안내문에 링크가 포함되어 있는지 확인 |
+
+---
 
 ### 7.4 HelpService (부가 서비스 계층 - 도움말)
 **Class Description**  
@@ -1384,6 +1397,7 @@ SearchController "1" -- "1" HistoryDatabase : uses >
 SearchScreen o-- "0..*" SearchHistoryItem : displays
 HistoryDatabase *-- "0..*" SearchHistoryItem : stores
 ```
+---
 
 ### 8.1 SearchScreen
 **Class Description**  
@@ -1494,6 +1508,7 @@ classDiagram
     StockRepository --> ExternalAPI : calls
     StockViewModel ..> StockData : returns
 ```
+---
 
 ### 9.1 StockAnalysisView
 **Class Description**  
@@ -1594,6 +1609,7 @@ classDiagram
     StockRepository --> ExternalAPI : calls
     StockViewModel ..> FinancialData : returns
 ```
+---
 
 ### 10.1 FinancialData
 **Class Description**  
@@ -1645,6 +1661,7 @@ classDiagram
     TrashViewModel ..> TrashItem : contains
     ItemRepository ..> TrashItem : returns
 ```
+---
 
 ### 11.1 TrashView
 **Class Description**  
