@@ -1,45 +1,5 @@
 ![AlphaBot Use Case Diagram](./useCaseDiagram.png)
 
-### Use Case #N : <제목>
-
-**Summary**  
-: 
-
-**Scope / Level**  
-: <Scope>, <Level>
-
-**Author / Last Updated**  
-: <Author>, <Last Updated>
-
-**Actors**  
-: Primary – <>, Secondary – <>
-
-**Status**  
-: <Analysis / Draft / …>
-
-**Preconditions**  
-: 
-
-**Trigger**  
-: 
-
-**Post Conditions**  
-: Success – <> / Failed – <>
-
-**Main Flow**
-1. 
-2. 
-3. 
-
-**Extensions**
-- 2a. <조건> → 2a1. <동작>
-- 3b. <조건> → 3b1. <동작>
-
-**Related**
-- Performance: ≤ n s / Frequency: / Concurrency: / Due Date:
-
-
-
 ### Use Case #1 : Log-in
 
 **Summary**  

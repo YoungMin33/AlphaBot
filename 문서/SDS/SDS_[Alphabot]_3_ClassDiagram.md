@@ -1,4 +1,4 @@
-## 클래스 다이어그램: User
+## 1. 클래스 다이어그램: User 채팅 및 북마크 관리
 
 
 ```mermaid
@@ -73,7 +73,7 @@ classDiagram
 ```
 
 
-## users
+### 2.1 users
 **Class Description**
 : 서비스 이용자 계정 및 식별 정보를 보관합니다.
 
@@ -91,7 +91,7 @@ classDiagram
 
 ---
 
-## chat
+### 2.2 chat
 **Class Description**
 : 사용자와 어시스턴트 간의 개별 대화(세션)를 정의합니다.
 
@@ -111,7 +111,7 @@ classDiagram
 
 ---
 
-## messages
+### 2.3 messages
 **Class Description**
 : 채팅방 내에서 사용자와 어시스턴트가 주고받은 개별 메시지를 저장합니다.
 
@@ -131,7 +131,7 @@ classDiagram
 
 ---
 
-## category
+### 2.4 category
 **Class Description**
 : 북마크를 분류하기 위한 사용자 정의 카테고리입니다.
 
@@ -145,7 +145,7 @@ classDiagram
 
 ---
 
-## bookmark
+### 2.5 bookmark
 **Class Description**
 : 사용자가 특정 메시지(`messages`)를 저장(북마크)한 정보를 관리합니다. `users`와 `messages` 간의 연결 테이블 역할을 합니다.
 
@@ -163,7 +163,7 @@ classDiagram
 
 ---
 
-## stocks
+### 2.6 stocks
 **Class Description**
 : 주식 종목의 기본 정보, 현재가, 밸류에이션 등 요약 정보를 저장합니다.
 
@@ -191,7 +191,7 @@ classDiagram
 
 ---
 
-## financial_statements
+### 2.7 financial_statements
 **Class Description**
 : 개별 주식(`stocks`)의 분기별/연간 재무제표 데이터를 저장합니다.
 
@@ -222,7 +222,7 @@ classDiagram
 
 ---
 
-##클래스 다이어그램: User
+## 2. 클래스 다이어그램: User 정보 및 로그인
 
 ```mermaid
 classDiagram
@@ -245,7 +245,7 @@ classDiagram
   }
 ```
 
-## User
+### 2.1 User
 **Class Description**  
 : 이용자의 계정 정보와 핵심 데이터를 관리합니다.
 
@@ -283,7 +283,7 @@ classDiagram
 
 ---
 
-## 데이터 타입: Class Diagram
+## 3. 데이터 타입: Class Diagram
 ```mermaid
 classDiagram
     direction LR
@@ -431,9 +431,7 @@ classDiagram
 ```
 ---
 
-## User (사용자) 스키마
-
-### UserBase
+### 3.1 UserBase
 **Class Description** : 사용자의 기본 공통 속성을 위한 Base 스키마입니다.
 
 **Attributes**
@@ -442,7 +440,7 @@ classDiagram
 
 ---
 
-### UserCreate
+### 3.2 UserCreate
 **Class Description** : 회원가입 시 요청에 사용할 스키마입니다. (UserBase 상속)
 
 **Attributes**
@@ -451,7 +449,7 @@ classDiagram
 
 ---
 
-### UserUpdate
+### 3.3 UserUpdate
 **Class Description** : 프로필 수정 시 요청에 사용할 스키마입니다.
 
 **Attributes**
@@ -459,7 +457,7 @@ classDiagram
 
 ---
 
-### PasswordChange
+### 3.4 PasswordChange
 **Class Description** : 비밀번호 변경 시 요청에 사용할 스키마입니다.
 
 **Attributes**
@@ -472,7 +470,7 @@ classDiagram
 
 ---
 
-### UserInDB
+### 3.5 UserInDB
 **Class Description** : DB에서 읽어온 데이터를 위한 스키마 (내부 로직용). (UserBase 상속)
 
 **Attributes**
@@ -482,7 +480,7 @@ classDiagram
 
 ---
 
-### User
+### 3.6 User
 **Class Description** : API 응답으로 클라이언트에게 반환할 스키마 (내 정보 조회). (UserBase 상속)
 
 **Attributes**
@@ -490,11 +488,8 @@ classDiagram
 * **user_id** *(int)*: 사용자 고유 ID.
 
 ---
----
 
-## Auth & Token (인증) 스키마
-
-### Token
+### 3.7 Token
 **Class Description** : 로그인 성공 시 반환되는 JWT 토큰 응답 스키마입니다.
 
 **Attributes**
@@ -503,7 +498,7 @@ classDiagram
 
 ---
 
-### TokenData
+### 3.8 TokenData
 **Class Description** : JWT 토큰 내부에 저장되는 데이터 스키마입니다.
 
 **Attributes**
@@ -511,7 +506,7 @@ classDiagram
 
 ---
 
-### LoginRequest
+### 3.9 LoginRequest
 **Class Description** : JSON 기반 로그인 요청 스키마 (OAuth2PasswordRequestForm 대안 옵션).
 
 **Attributes**
@@ -521,9 +516,7 @@ classDiagram
 ---
 ---
 
-## Chat & Message (채팅) 스키마
-
-### ChatCreate
+### 3.10 ChatCreate
 **Class Description** : 새 채팅방 생성을 위한 요청 스키마입니다.
 
 **Attributes**
@@ -531,7 +524,7 @@ classDiagram
 
 ---
 
-### ChatUpdate
+### 3.11 ChatUpdate
 **Class Description** : 채팅방 정보 수정을 위한 요청 스키마입니다.
 
 **Attributes**
@@ -540,7 +533,7 @@ classDiagram
 
 ---
 
-### ChatRead
+### 3.12 ChatRead
 **Class Description** : 채팅방 정보 조회를 위한 응답 스키마입니다.
 
 **Attributes**
@@ -552,7 +545,7 @@ classDiagram
 
 ---
 
-### ChatList
+### 3.13 ChatList
 **Class Description** : 채팅방 목록 응답 스키마 (페이지네이션).
 
 **Attributes**
@@ -564,7 +557,7 @@ classDiagram
 
 ---
 
-### MessageCreate
+### 3.14 MessageCreate
 **Class Description** : 새 메시지 생성을 위한 요청 스키마 (POST /api/rooms/{room_id}/messages).
 
 **Attributes**
@@ -572,7 +565,7 @@ classDiagram
 
 ---
 
-### MessageRead
+### 3.15 MessageRead
 **Class Description** : 메시지 조회를 위한 응답 스키마 (GET /api/rooms/{room_id}/messages).
 
 **Attributes**
@@ -585,7 +578,7 @@ classDiagram
 
 ---
 
-### MessageList
+### 3.16 MessageList
 **Class Description** : 메시지 목록 응답 스키마 (페이지네이션).
 
 **Attributes**
@@ -596,11 +589,8 @@ classDiagram
 * **total_pages** *(int)*: 전체 페이지 수.
 
 ---
----
 
-## Category (카테고리) 스키마
-
-### CategoryBase
+### 3.17 CategoryBase
 **Class Description** : 카테고리 공통 속성을 위한 기본 스키마입니다.
 
 **Attributes**
@@ -609,7 +599,7 @@ classDiagram
 
 ---
 
-### CategoryCreate
+### 3.18 CategoryCreate
 **Class Description** : 카테고리 생성을 위한 요청 스키마입니다. (CategoryBase 상속)
 
 **Attributes**
@@ -617,7 +607,7 @@ classDiagram
 
 ---
 
-### CategoryUpdate
+### 3.19 CategoryUpdate
 **Class Description** : 카테고리 수정을 위한 요청 스키마입니다.
 
 **Attributes**
@@ -626,7 +616,7 @@ classDiagram
 
 ---
 
-### CategoryInDB
+### 3.20 CategoryInDB
 **Class Description** : 데이터베이스의 카테고리 스키마입니다. (CategoryBase 상속)
 
 **Attributes**
@@ -636,7 +626,7 @@ classDiagram
 
 ---
 
-### Category
+### 3.21 Category
 **Class Description** : 클라이언트에 카테고리 정보를 반환하기 위한 응답 스키마입니다. (CategoryInDB 상속)
 
 **Attributes**
@@ -644,7 +634,7 @@ classDiagram
 
 ---
 
-### CategoryList
+### 3.22 CategoryList
 **Class Description** : 카테고리 목록 응답 스키마 (페이지네이션).
 
 **Attributes**
@@ -655,11 +645,8 @@ classDiagram
 * **total_pages** *(int)*: 전체 페이지 수.
 
 ---
----
 
-## Bookmark (북마크) 스키마
-
-### BookmarkCreate
+### 3.23 BookmarkCreate
 **Class Description** : 북마크(메시지 저장) 생성을 위한 요청 스키마입니다.
 
 **Attributes**
@@ -668,7 +655,7 @@ classDiagram
 
 ---
 
-### BookmarkRead
+### 3.24 BookmarkRead
 **Class Description** : 북마크 조회를 위한 응답 스키마입니다.
 
 **Attributes**
@@ -680,7 +667,7 @@ classDiagram
 
 ---
 
-### BookmarkList
+### 3.25 BookmarkList
 **Class Description** : 북마크 목록 응답 스키마 (페이지네이션).
 
 **Attributes**
@@ -693,7 +680,7 @@ classDiagram
 ---
 
 
-##채팅 메시지와 저장과 채팅방 삭제를 위한 class diagram
+## 4. 채팅 메시지와 저장과 채팅방 삭제를 위한 class diagram
 ```mermaid
 classDiagram
     class ChatPage {
@@ -814,7 +801,7 @@ classDiagram
 ```
 
 
-## ChatApiClient
+### 4.1 ChatApiClient
 **Class Description**  
 : 북마크·채팅 관련 HTTP 호출을 캡슐화합니다.
 
@@ -836,7 +823,7 @@ classDiagram
 
 ---
 
-## BookmarkRouter
+### 4.2 BookmarkRouter
 **Class Description**  
 : FastAPI에서 북마크 관련 엔드포인트를 제공하는 라우터입니다.
 
@@ -852,7 +839,7 @@ classDiagram
 
 ---
 
-## ChatRouter
+### 4.3 ChatRouter
 **Class Description**  
 : 채팅 메시지·채팅방 요청을 처리하는 FastAPI 라우터입니다.
 
@@ -872,7 +859,7 @@ classDiagram
 
 ---
 
-## BookmarkService
+### 4.4 BookmarkService
 **Class Description**  
 : 북마크 중복 검사 및 저장 로직을 제공하는 서비스 계층입니다.
 
@@ -892,7 +879,7 @@ classDiagram
 
 ---
 
-## ChatService
+### 4.5 ChatService
 **Class Description**  
 : 채팅 메시지 처리와 채팅방 상태 변경을 담당하는 서비스입니다.
 
@@ -912,7 +899,7 @@ classDiagram
 
 ---
 
-## BookmarkRepository
+### 4.6 BookmarkRepository
 **Class Description**  
 : SQLAlchemy 세션으로 북마크 테이블을 조작합니다.
 
@@ -928,7 +915,7 @@ classDiagram
 
 ---
 
-## CategoryRepository
+### 4.7 CategoryRepository
 **Class Description**  
 : 카테고리 조회 및 생성을 담당합니다.
 
@@ -947,7 +934,7 @@ classDiagram
 
 ---
 
-## ChatRepository
+### 4.8 ChatRepository
 **Class Description**  
 : 채팅방 엔티티를 조회·갱신합니다.
 
@@ -962,7 +949,7 @@ classDiagram
 
 ---
 
-## MessageRepository
+### 4.9 MessageRepository
 **Class Description**  
 : 채팅 메시지를 조회하고 저장합니다.
 
@@ -978,7 +965,7 @@ classDiagram
   : 새 메시지 저장.
 
 ---
-#채팅을 위한 Chat Class diagram
+# 5. 채팅을 위한 Chat Class diagram
 
 ```mermaid
  classDiagram
@@ -1042,7 +1029,7 @@ classDiagram
     NLPService "1" ..> FinalResponse : generates/returns
 ```
 
-## ChatController
+### 5.1 ChatController
 **Class Description**  
 : 사용자 입력 메세지를 받아 적절한 서비스(NLP, Help, Share)로 라우팅하는
 시스템의 입구
@@ -1056,7 +1043,7 @@ classDiagram
 - **displayMessage** *(finalResponse:FinalResponse)*
 
 
-## NLPService
+### 5.2 NLPService
 **Class Description**  
 : 사용자 질문의 분석, 데이터 조회, 답변 생성, 기록 저장 등 질의 응답 전 과정을 조정
 
@@ -1072,7 +1059,7 @@ classDiagram
 - **saveHistory** *(query: string, response: string)*
 
 
-## AIModel(의도 분석 및 답변 생성)
+### 5.3 AIModel(의도 분석 및 답변 생성)
 **Class Description**  
 : 사용자 쿼리의 의도 분류 및 지식/분석 기반 답변을 생성
 
@@ -1083,7 +1070,7 @@ classDiagram
 - **analyzeIntent** *(query: string)*
 - **generateResponse** *(query: string, context: string)*
 
-## APIDataConnector (실시간 데이터 조회)
+### 5.4 APIDataConnector (실시간 데이터 조회)
 **Class Description**  
 : 실시간 주식 및 금융 데이터를 외부 API와 연동하여 조회.
 
@@ -1093,7 +1080,7 @@ classDiagram
 ### Operations
 - **fetchData** *(intent:Intent, stockCode:string)*
 
-## ChatRepository(기록 저장)
+### 5.5 ChatRepository(기록 저장)
 **Class Description**  
 : 챗봇의 대화 기록(메시지)을 데이터베이스에 저장
 
@@ -1103,7 +1090,7 @@ classDiagram
 ### Operations
 - **saveHistory** *(message:Message)*
 
-#채팅 공유를 위한 Share Chat Class Diagram
+# 6. 채팅 공유를 위한 Share Chat Class Diagram
 
 ```mermaid
 classDiagram
@@ -1176,7 +1163,7 @@ classDiagram
     ExternalShareAPI "1" -- "1" ShareFile : sends <
 ```
 
-## ShareService(부가 서비스 계층 – 공유)
+### 6.1 ShareService(부가 서비스 계층 – 공유)
 **Class Description**  
 : 대화 기록을 파일로 생성하고, 외부 플랫폼으로 전송하여 공유하는 전체 프로세스를 관리하는 서비스.
 
@@ -1192,7 +1179,7 @@ classDiagram
 - **validateContent** *(history: ChatHistory)*
 - **shareCompleted** *(convId: string)*
 
-## FileGenerator (데이터 처리 계층 - 파일 생성)
+### 6.2 FileGenerator (데이터 처리 계층 - 파일 생성)
 **Class Description**  
 : 공유를 목적으로 대화 기록(ChatHistory)을 이미지(스크린샷), 텍스트 등 선택된 형태의 파일(ShareFile)로 변환하여 생성.
 
@@ -1204,7 +1191,7 @@ classDiagram
 - **formatAsImage** *(history: ChatHistory)* 
 - **formatAsText** *(history: ChatHistory)*
 
-## ExternalShareAPI (데이터 연동 계층 - 공유)
+### 6.3 ExternalShareAPI (데이터 연동 계층 - 공유)
 **Class Description**  
 : 생성된 파일을 카카오톡, X, 이메일 등 외부 플랫폼으로 전송하는 인터페이스
 
@@ -1217,7 +1204,7 @@ classDiagram
 - **checkPlatformStatus** *((platform: String))* 
 - **handleNetworkError** *(platform: String)*
 
-## ChatRepository (데이터 접근 계층)
+### 6.4 ChatRepository (데이터 접근 계층)
 **Class Description**  
 : 챗봇의 대화 기록(메시지)을 데이터베이스에 저장하고 조회하는 역할
 
@@ -1230,7 +1217,7 @@ classDiagram
 - **getConversationHistory** *(((convId: string, range: int)))* 
 - **findLastMessage** *((convId: string))*
 
-#도움말 기능을 위한 Class Diagram
+# 7. 도움말 기능을 위한 Class Diagram
 ```mermaid
 classDiagram
     direction LR
@@ -1301,7 +1288,7 @@ classDiagram
 ```
 
 
-## 1. FAQRepository (데이터 접근 계층 - FAQ)
+### 7.1 FAQRepository (데이터 접근 계층 - FAQ)
 
 | Class | **FAQRepository** |
 | :--- | :--- |
@@ -1316,7 +1303,7 @@ classDiagram
 
 ---
 
-### 2. AIGuidanceModel (모델/분석 계층 - 안내 생성)
+### 7.2 AIGuidanceModel (모델/분석 계층 - 안내 생성)
 
 | Class | **AIGuidanceModel** |
 | :--- | :--- |
@@ -1331,7 +1318,7 @@ classDiagram
 
 ---
 
-### 3. GuidanceContent (안내/도움말 콘텐츠)
+### 7.3 GuidanceContent (안내/도움말 콘텐츠)
 
 | Class | **GuidanceContent** |
 | :--- | :--- |
@@ -1345,7 +1332,7 @@ classDiagram
 | | getContent | (void) | String | public | 안내문의 상세 내용을 반환 |
 | | hasLinks | (void) | boolean | public | 안내문에 링크가 포함되어 있는지 확인 |
 
-## 4. HelpService (부가 서비스 계층 - 도움말)
+### 7.4 HelpService (부가 서비스 계층 - 도움말)
 **Class Description**  
 : 사용자 요청을 처리하여 일반 가이드(FAQ) 또는 AI 기반의 특정 기능 안내를 제공하는 서비스.
 
@@ -1360,7 +1347,7 @@ classDiagram
 - **isSpecificQuery** *(((query: string)))*
 
 
-## 검색 기록: Class Diagram
+## 8. 검색 기록: Class Diagram
 
 ```mermaid
 classDiagram
@@ -1398,7 +1385,7 @@ SearchScreen o-- "0..*" SearchHistoryItem : displays
 HistoryDatabase *-- "0..*" SearchHistoryItem : stores
 ```
 
-## SearchScreen
+### 8.1 SearchScreen
 **Class Description**  
 : 사용자에게 검색 기록을 보여주고, 사용자 입력을 받아 SearchController에 전달하는 UI(표현) 계층이다.
 
@@ -1422,7 +1409,7 @@ HistoryDatabase *-- "0..*" SearchHistoryItem : stores
 
 ---
 
-## SearchController
+### 8.2 SearchController
 **Class Description**  
 : SearchScreen의 요청을 받아 비즈니스 로직을 수행하고, HistoryDatabase를 통해 데이터 작업을 지시하는 컨트롤러(로직) 계층이다.
 
@@ -1438,7 +1425,7 @@ HistoryDatabase *-- "0..*" SearchHistoryItem : stores
 
 ---
 
-## HistoryDatabase
+### 8.3 HistoryDatabase
 **Class Description**  
 : 검색 기록 데이터의 영속성(저장, 조회, 삭제)을 실제로 담당하는 데이터 접근(저장소) 계층이다.
 
@@ -1451,7 +1438,7 @@ HistoryDatabase *-- "0..*" SearchHistoryItem : stores
   : 데이터베이스에서 itemId와 일치하는 항목을 삭제하고 성공 여부를 반환.
 
 
-## SearchHistoryItem
+### 8.4 SearchHistoryItem
 **Class Description**  
 : 개별 검색 기록 항목을 나타내는 데이터 객체(DTO 또는 Entity)이다.
 
@@ -1469,7 +1456,7 @@ HistoryDatabase *-- "0..*" SearchHistoryItem : stores
 
 ---
 
-## 1. 종목 상세 정보 조회 : classDiagram
+## 9. 종목 상세 정보 조회 : classDiagram
 
 ```mermaid
 classDiagram
@@ -1508,7 +1495,7 @@ classDiagram
     StockViewModel ..> StockData : returns
 ```
 
-## StockAnalysisView
+### 9.1 StockAnalysisView
 **Class Description**  
 : 별도 분석 영역의 UI, 사용자 입력 및 탭 전환 이벤트를 수신합니다.
 
@@ -1526,7 +1513,7 @@ classDiagram
 
 ---
 
-## StockViewModel
+### 9.2 StockViewModel
 **Class Description**
 : UI에 표시될 데이터 상태를 관리하고, View의 요청에 따라 데이터를 Repository에 요청합니다.
 
@@ -1540,7 +1527,7 @@ classDiagram
 
 ---
 
-## StockRepository
+### 9.3 StockRepository
 **Class Description**
 : 실시간 시세 및 재무 데이터를 외부 API로부터 효율적으로 가져와 데이터 모델로 변환합니다.
 
@@ -1550,13 +1537,13 @@ classDiagram
 
 ---
 
-## ExternalAPI
+### 9.4 ExternalAPI
 **Class Description**
 : 실제 증권사나 금융 데이터 제공업체의 API 호출을 담당하는 가상 클래스입니다.
 
 ---
 
-## StockData
+### 9.5 StockData
 **Class Description**
 : 특정 종목의 현재가, 거래량, 등락률 등 실시간 상세 시세 정보를 담는 데이터 구조입니다.
 
@@ -1570,7 +1557,7 @@ classDiagram
 
 ---
 
-## 2. 재무제표 조회 : classDiagram
+## 10. 재무제표 조회 : classDiagram
 
 ```mermaid
 classDiagram
@@ -1608,7 +1595,7 @@ classDiagram
     StockViewModel ..> FinancialData : returns
 ```
 
-## FinancialData
+### 10.1 FinancialData
 **Class Description**  
 : 특정 종목의 재무 상태표, 손익계산서, 현금흐름표 및 PER, PBR, ROE 등 핵심 재무 지표를 담는 데이터 구조입니다.
 
@@ -1624,7 +1611,7 @@ classDiagram
 
 ---
 
-## 3. 휴지통 관리 : classDiagram
+## 11. 휴지통 관리 : classDiagram
 
 ```mermaid
 classDiagram
@@ -1659,7 +1646,7 @@ classDiagram
     ItemRepository ..> TrashItem : returns
 ```
 
-## TrashView
+### 11.1 TrashView
 **Class Description**  
 : 휴지통 목록을 출력하고, 항목 복원 또는 영구 삭제와 같은 사용자 입력을 처리합니다.
 
@@ -1675,7 +1662,7 @@ classDiagram
 
 ---
 
-## TrashViewModel
+### 11.2 TrashViewModel
 **Class Description**  
 : 휴지통 목록의 상태를 관리하며, 사용자의 복원/삭제 요청에 따라 Repository에 데이터 변경합니다.
 
@@ -1691,7 +1678,7 @@ classDiagram
 
 ---
 
-## ItemRepository
+### 11.3 ItemRepository
 **Class Description**  
 : 로컬 DB에서 삭제 플래그가 설정된 항목을 조회하고, 사용자의 요청에 따라 플래그를 변경하거나 영구 삭제합니다.
 
@@ -1703,7 +1690,7 @@ classDiagram
 
 ---
 
-## TrashItem
+### 11.4 TrashItem
 **Class Description**  
 : 삭제된 채팅 기록 또는 저장된 답변의 식별 정보, 유형, 내용 미리보기, 삭제 시각 등을 담는 데이터 구조입니다.
 ### Attributes
@@ -1716,7 +1703,7 @@ classDiagram
 
 ---
 
-## LocalDB
+### 11.5 LocalDB
 **Class Description**  
 : 실제 챗봇의 대화 기록 및 항목 저장 데이터를 보관하는 로컬 데이터베이스입니다.
 

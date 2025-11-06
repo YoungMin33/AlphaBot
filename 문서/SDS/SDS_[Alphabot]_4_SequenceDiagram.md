@@ -1,45 +1,4 @@
-시퀀스 다이아그램 예제
-
-
-## 1.1 알람 설정(예제)
-
-### 1.1.1 알람 설정 흐름(예제)
-```mermaid
-sequenceDiagram
-  autonumber
-  actor U as User
-  participant FE as Frontend
-  participant A as Alert API
-  participant E as PriceEventEngine
-  participant N as Notification
-
-  U->>FE: Set rule (AAPL ≤ 180)
-  FE->>A: POST /alerts
-  A-->>FE: 201 Created
-
-  par Ticks/Webhooks
-    E->>E: Ingest quotes
-  and Events
-    E->>A: GET /alerts?stock=AAPL
-    A-->>E: Active alert list
-  end
-
-  E->>E: Evaluate condition
-  alt Triggered
-    E->>N: send(userId, message)
-    N-->>U: Push/App notification
-  else Not yet
-    E->>E: wait next tick
-  end
-```
-
-사용자가 회원가입을 누르면 이메일 인증 → 닉네임 중복확인 → 비밀번호 확인 → 개인정보 입력 → 서버에 가입 요청 후 응답이 오면 로그인 화면으로 전환된다. (예제)
-
-
-
-위 형식에 맞춰서 아래에 시퀀스 다이아그램을 작성해주세요.
-
-## 1
+## 1. 종목 분석 영역
 
 ### 1.1 종목 상세 정보 조회
 ```mermaid
@@ -546,7 +505,7 @@ sequenceDiagram
 
 사용자가 카테고리를 생성/수정/삭제/정렬한다 → 프론트엔드는 백엔드에 해당 작업 요청을 보낸다 → (1. 이름 중복/금칙어 또는 기본 �테고리 수정/삭제 시도) 백엔드가 유효성 검증 실패 응답을 보내면, 프론트엔드는 사용자에게 경고 메시지를 표시하고 저장을 차단한다. → (2. 검증 성공) 백엔드가 유효성 검증 통과 응답을 보내면, 백엔드는 DB에 변경사항을 저장한다 → 저장 실패 시 오류 응답을 보내면, 프론트엔드는 임시 저장 또는 롤백하고 오류 및 재시도 제공한다. → (3. 저장 성공) 백엔드가 저장 성공 응답을 보내면, 백엔드는 UI에 변경 사항을 즉시 반영하고 사용자에게 변경된 카테고리 리스트를 표시한다.
 
-## 2
+## 2 채팅 메시지 저장과 채팅방 삭제
 
 ### 2.1 채팅 메시지 저장
 ```mermaid
