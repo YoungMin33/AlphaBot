@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 import math
@@ -39,7 +39,9 @@ def read_categories(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1, description="페이지 번호"),
     page_size: int = Query(10, ge=1, le=100, description="페이지 크기"),
-    search: str = Query(None, description="검색어")
+    search: str = Query(None, description="검색어"),
+    # --- 1. sort_by 쿼리 파라미터 추가 ---
+    sort_by: Optional[str] = Query(None, description="Sort by 'title' (asc) or 'created_at' (desc)")
 ) -> CategoryList:
     """모든 카테고리 목록 조회 (페이지네이션 및 검색 지원)"""
     
@@ -47,11 +49,13 @@ def read_categories(
     
     if search:
         categories = category_crud.search_categories(
-            db, search_term=search, skip=skip, limit=page_size
+            db, search_term=search, skip=skip, limit=page_size, sort_by=sort_by  # <-- 2. 파라미터 전달
         )
         total = len(category_crud.search_categories(db, search_term=search, skip=0, limit=1000))
     else:
-        categories = category_crud.get_multi_categories(db, skip=skip, limit=page_size)
+        categories = category_crud.get_multi_categories(
+            db, skip=skip, limit=page_size, sort_by=sort_by  # <-- 2. 파라미터 전달
+        )
         total = category_crud.get_count(db)
     
     total_pages = math.ceil(total / page_size) if total > 0 else 1
