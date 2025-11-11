@@ -129,7 +129,6 @@ def create_chat_room(
         user_id=current_user.user_id,
         title=chat_in.title,
         stock_code=chat_in.stock_code,
-        trash_can=TrashEnum.out
     )
     db.add(new_chat)
     db.commit()
