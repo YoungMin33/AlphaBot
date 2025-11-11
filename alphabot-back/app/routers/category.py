@@ -6,8 +6,8 @@ import math
 from app.db import get_db
 from app.crud.crud_category import category_crud
 from app.schemas.category import Category, CategoryCreate, CategoryUpdate, CategoryList
-from app.models.user import User
-from app.core.auth import require_admin_user
+from app.models.models import User
+from app.core.dependencies import require_admin_user # 현재 이함수는 없음 관리자라는 개념이 User 모델에 빠져있기 때문에 사용 불가가
 
 router = APIRouter()
 

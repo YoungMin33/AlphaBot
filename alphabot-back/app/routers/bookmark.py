@@ -7,21 +7,13 @@ import math
 from ..crud.crud_bookmark import bookmark_crud
 from .. import schemas
 from ..models import models
-from ..db import session
+from ..db import get_db
 
 # 인증을 위해 현재 로그인한 사용자를 가져오는 의존성 (경로 확인 필요)
-from ..core.auth import get_current_user 
+from ..core.dependencies import get_current_user
 
 # APIRouter 객체 생성
 router = APIRouter()
-
-# --- 의존성 주입 함수 (DB 세션 관리) ---
-def get_db():
-    db = session.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # --- API 엔드포인트 정의 ---
 
