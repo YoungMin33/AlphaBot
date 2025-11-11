@@ -81,6 +81,7 @@ class Chat(Base):
         ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False
     )
     title: Mapped[str] = mapped_column(String(100), nullable=False)
+    stock_code: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # 종목 코드 (예: AAPL, MSFT)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=False), server_default=func.now(), nullable=False
     )

@@ -53,6 +53,8 @@ class Chat(Base):
     chat_id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('public.users.user_id', ondelete="CASCADE"), nullable=False)
     title = Column(String(100), nullable=False)
+    # 종목별 채팅 기능을 위한 선택적 종목 코드 (예: AAPL). 인덱스 부여.
+    stock_code = Column(String(20), nullable=True, index=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
     lastchat_at = Column(TIMESTAMP, nullable=True)
     trash_can = Column(Enum(TrashEnum, name='trash_enum', create_type=False), server_default=TrashEnum.in_.value)
