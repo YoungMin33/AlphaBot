@@ -20,6 +20,8 @@ logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 app.include_router(user.router, prefix="/api", tags=["User"])
 app.include_router(auth.router, prefix="/api", tags=["Auth"])
 app.include_router(chat.router, prefix="/api", tags=["Chat"])
+app.include_router(category.router, prefix="/api/categories", tags=["Categories"])
+app.include_router(bookmark.router, prefix="/api/bookmarks", tags=["Bookmarks"])
 
 # 모든 경로 index.html 반환
 @app.get("/{full_path:path}")

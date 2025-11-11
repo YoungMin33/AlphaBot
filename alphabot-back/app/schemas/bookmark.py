@@ -30,3 +30,10 @@ class BookmarkList(BaseModel):
     total_pages: int
 
 
+class BookmarkUpdate(BaseModel):
+    """북마크 수정을 위한 요청 스키마 (예: 카테고리 이동)"""
+    # 사용자가 북마크의 카테고리만 변경할 수 있도록 허용
+    # null 값을 허용하여 '미분류'로 이동하는 것도 가능하게 함
+    category_id: Optional[int] = Field(None, description="새 카테고리 ID (null로 보내면 미분류로 이동)")
+
+
