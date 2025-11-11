@@ -1,19 +1,11 @@
 from typing import List
-<<<<<<< HEAD
-from fastapi import APIRouter, Depends, HTTPException, Query
-=======
-from fastapi import APIRouter, Depends, HTTPException, status
->>>>>>> develop
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from app.core.dependencies import get_current_user
 from app.db import get_db
-<<<<<<< HEAD
-from app.schemas.chats import MessageCreate, MessageRead, ChatRead, ChatByStockResponse
-=======
-from app.schemas.chats import MessageCreate, MessageRead, ChatRead, ChatCreate
->>>>>>> develop
+from app.schemas.chats import MessageCreate, MessageRead, ChatRead, ChatCreate, ChatByStockResponse
 from app.models import User, Chat, Message
 from app.services.chat_service import (
     normalize_stock_code,

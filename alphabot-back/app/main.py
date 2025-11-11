@@ -9,13 +9,6 @@ from sqlalchemy.engine import Engine
 from app.db import engine, get_db, Base
 from app.routers import auth, chat, user
 
-<<<<<<< HEAD
-from app.db import engine, get_db
-from app.models import Base, role_enum, trash_enum
-from app.routers import auth, chat,user
-
-=======
->>>>>>> develop
 app = FastAPI()
 
 # 기본 로깅 레벨 WARNING으로 설정

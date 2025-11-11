@@ -69,7 +69,7 @@ class Chat(Base):
     stock_code = Column(String(20), nullable=True, index=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
     lastchat_at = Column(TIMESTAMP, nullable=True)
-    trash_can = Column(Enum(TrashEnum, name='trash_enum', create_type=False), server_default=TrashEnum.out.value)
+    trash_can = Column(Enum(TrashEnum, name='trash_enum', create_type=False), server_default=TrashEnum.in_.value)
 
     # --- Relationships ---
     # Chat(1)이 User(1)에 속함

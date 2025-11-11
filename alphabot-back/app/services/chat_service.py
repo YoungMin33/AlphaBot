@@ -11,10 +11,6 @@ from sqlalchemy.exc import IntegrityError
 from app.models import Chat, Message, RoleEnum, TrashEnum, User
 from app.schemas.chats import MessageCreate
 
-_STOCK_CODE_PATTERN = re.compile(r'^[A-Z0-9.\-]{1,20}$')
-
-
-
 # 이 모듈은 OpenAI API를 활용해 챗봇 응답을 생성하고,
 # 대화 이력을 DB에 저장/조회하는 서비스 로직을 제공합니다.
 
@@ -30,6 +26,7 @@ _OPENAI_MODEL_DEFAULT = os.getenv("OPENAI_MODEL", "gpt-5")  # 기본 모델
 _OPENAI_TEMPERATURE_DEFAULT = float(os.getenv("OPENAI_TEMPERATURE", "0.2"))  # 샘플링 온도
 _OPENAI_MAX_TOKENS_DEFAULT = int(os.getenv("OPENAI_MAX_TOKENS", "512"))  # 최대 토큰 수
 
+_STOCK_CODE_PATTERN = re.compile(r'^[A-Z0-9.\-]{1,20}$')
 
 def _get_openai_client() -> "OpenAI":
     """환경 변수에서 키를 읽어 OpenAI 클라이언트를 생성합니다. 사용 불가 시 500 오류를 발생시킵니다."""
