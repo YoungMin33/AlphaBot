@@ -9,6 +9,7 @@ from app.db import engine, get_db
 from app.models import Base, role_enum, trash_enum
 from app.routers import auth, chat,user
 
+app = FastAPI()
 
 # 기본 로깅 레벨 WARNING으로 설정
 logging.getLogger().setLevel(logging.WARNING)

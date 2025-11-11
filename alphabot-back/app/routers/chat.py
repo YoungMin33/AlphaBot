@@ -1,11 +1,15 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_user
 from app.db import get_db
-from app.schemas.chats import MessageCreate, MessageRead, ChatRead
+from app.schemas.chats import MessageCreate, MessageRead, ChatRead, ChatByStockResponse
 from app.models import User, Chat, Message
+from app.services.chat_service import (
+    normalize_stock_code,
+    upsert_chat_by_stock,
+)
 
 router = APIRouter(tags=["chat"])
 
@@ -54,3 +58,35 @@ def get_chat_rooms(
     """현재 사용자가 참여 중인 모든 채팅방 목록을 조회"""
     chat_rooms = db.query(Chat).filter(Chat.user_id == current_user.user_id).all()
     return chat_rooms
+
+
+@router.put("/v1/chats/by-stock/{stock_code}", response_model=ChatByStockResponse)
+def enter_chat_by_stock(
+    stock_code: str,
+    title: str | None = Query(default=None, max_length=100, description="신규 생성 시 사용할 제목"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """사용자/종목 조합으로 채팅방을 조회하거나 생성 후 chat_id를 반환"""
+    try:
+        normalized_code = normalize_stock_code(stock_code)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    if title:
+        normalized_title = title.strip()
+    else:
+        normalized_title = None
+    chat, existed = upsert_chat_by_stock(
+        db,
+        user=current_user,
+        stock_code=normalized_code,
+        title=normalized_title,
+    )
+
+    return ChatByStockResponse(
+        chat_id=chat.chat_id,
+        title=chat.title,
+        stock_code=chat.stock_code or normalized_code,
+        existed=existed,
+    )

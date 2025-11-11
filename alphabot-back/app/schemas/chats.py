@@ -27,12 +27,20 @@ class MessageRead(BaseModel):
 class ChatRead(BaseModel):
     chat_id: int
     title: str
+    stock_code: Optional[str] = None
     created_at: datetime
     lastchat_at: Optional[datetime] = None
     trash_can: str
 
     class Config:
         from_attributes = True
+
+
+class ChatByStockResponse(BaseModel):
+    chat_id: int
+    title: str
+    stock_code: str
+    existed: bool
 
 
 # 채팅방 생성/수정 요청 스키마

@@ -1,13 +1,19 @@
 from __future__ import annotations
 
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import os
+import re
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
-from app.models import Chat, Message, RoleEnum, User
+from app.models import Chat, Message, RoleEnum, TrashEnum, User
 from app.schemas.chats import MessageCreate
+
+_STOCK_CODE_PATTERN = re.compile(r'^[A-Z0-9.\-]{1,20}$')
+
+
 
 # 이 모듈은 OpenAI API를 활용해 챗봇 응답을 생성하고,
 # 대화 이력을 DB에 저장/조회하는 서비스 로직을 제공합니다.
@@ -178,3 +184,84 @@ def create_message_and_reply(
     return user_msg, assistant_msg
 
 
+
+def normalize_stock_code(raw_code: str) -> str:
+    """종목 코드를 정규화(트림, 대문자, 길이 제한) 후 검증합니다."""
+    if raw_code is None:
+        raise ValueError("stock_code is required")
+
+    normalized = re.sub(r"\s+", "", raw_code).upper()
+    if not normalized:
+        raise ValueError("stock_code is empty")
+    if len(normalized) > 20:
+        raise ValueError("stock_code must be 20 chars or fewer")
+    if not _STOCK_CODE_PATTERN.match(normalized):
+        raise ValueError("stock_code contains invalid characters")
+    return normalized
+
+
+def get_active_chat_by_stock(db: Session, user_id: int, stock_code: str) -> Optional[Chat]:
+    """해당 로그인 사용자가 보유한 활성(휴지통 아님) 종목 채팅방을 반환합니다."""
+    return (
+        db.query(Chat)
+        .filter(
+            Chat.user_id == user_id,
+            Chat.stock_code == stock_code,
+            Chat.trash_can == TrashEnum.out,
+        )
+        .first()
+    )
+
+
+def upsert_chat_by_stock(
+    db: Session,
+    *,
+    user: User,
+    stock_code: str,
+    title: Optional[str] = None,
+) -> Tuple[Chat, bool]:
+    """종목별 채팅방을 조회하고 없으면 복원하거나 새로 만듭니다."""
+    existing = get_active_chat_by_stock(db, user.user_id, stock_code)
+    if existing:
+        return existing, True
+    
+    trashed = (
+        db.query(Chat)
+        .filter(
+            Chat.user_id == user.user_id,
+            Chat.stock_code == stock_code,
+            Chat.trash_can == TrashEnum.in_,
+        )
+        .order_by(Chat.chat_id.desc())
+        .first()
+    )
+
+    #휴지통에 있을 경우 실행
+    if trashed:
+        trashed.trash_can = TrashEnum.out
+        if title:
+            trashed.title = title.strip() or trashed.title
+        db.commit()
+        db.refresh(trashed)
+        return trashed, False
+
+    room_title = (title.strip() if title else None) or f"{stock_code} 채팅"
+    new_chat = Chat(
+        user_id=user.user_id,
+        title=room_title,
+        stock_code=stock_code,
+        trash_can=TrashEnum.out,
+    )
+    
+    db.add(new_chat)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        existing = get_active_chat_by_stock(db, user.user_id, stock_code)
+        if existing is None:
+            raise
+        return existing, True
+
+    db.refresh(new_chat)
+    return new_chat, False

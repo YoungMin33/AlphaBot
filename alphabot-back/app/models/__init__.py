@@ -86,7 +86,7 @@ class Chat(Base):
     )
     lastchat_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=False))
     trash_can: Mapped[TrashEnum] = mapped_column(
-        trash_enum, server_default=TrashEnum.IN.value, nullable=False
+        trash_enum, server_default=TrashEnum.OUT.value, nullable=False
     )
 
     owner: Mapped[User] = relationship(back_populates="chats")

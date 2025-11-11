@@ -1,7 +1,7 @@
 import enum
 from sqlalchemy import (
     create_engine, Column, Integer, String, Text, TIMESTAMP, 
-    ForeignKey, Enum, BigInteger, Numeric, Date, UniqueConstraint
+    ForeignKey, Enum, BigInteger, Numeric, Date, UniqueConstraint, Index, text
 )
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import func # func.now()를 위해 임포트
@@ -48,14 +48,25 @@ class User(Base):
 
 class Chat(Base):
     __tablename__ = 'chat'
-    __table_args__ = {'schema': 'public'}
+    __table_args__ = (
+        # 조건부 유니크 인덱스(사용자와 종목코드 조합)
+        Index(
+            'ux_chat_user_stock_active',
+            'user_id',
+            'stock_code',
+            unique=True,
+            postgresql_where=text("stock_code IS NOT NULL AND trash_can = 'out'")
+        ),
+        {'schema': 'public'},
+    )
 
     chat_id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('public.users.user_id', ondelete="CASCADE"), nullable=False)
     title = Column(String(100), nullable=False)
+    stock_code = Column(String(20), nullable=True, index=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
     lastchat_at = Column(TIMESTAMP, nullable=True)
-    trash_can = Column(Enum(TrashEnum, name='trash_enum', create_type=False), server_default=TrashEnum.in_.value)
+    trash_can = Column(Enum(TrashEnum, name='trash_enum', create_type=False), server_default=TrashEnum.out.value)
 
     # --- Relationships ---
     # Chat(1)이 User(1)에 속함
