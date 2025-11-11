@@ -46,11 +46,17 @@ class ChatByStockResponse(BaseModel):
 # 채팅방 생성/수정 요청 스키마
 class ChatCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=100, description="채팅방 제목")
+    stock_code: Optional[str] = Field(
+        None, min_length=1, max_length=20, description="종목 코드 (예: AAPL)"
+    )
 
 
 class ChatUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=100, description="채팅방 제목")
     trash_can: Optional[str] = Field(None, description="휴지통 상태: in 또는 out")
+    stock_code: Optional[str] = Field(
+        None, min_length=1, max_length=20, description="종목 코드 (예: AAPL)"
+    )
 
 
 # 목록 응답 스키마 (페이지네이션)
