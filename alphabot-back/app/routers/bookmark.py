@@ -5,7 +5,7 @@ import math
 
 # crud, schemas, models, db 폴더에서 필요한 것들을 import
 from ..crud.crud_bookmark import bookmark_crud
-from .. import schemas
+from app.schemas.bookmark import BookmarkCreate, BookmarkUpdate, BookmarkRead, BookmarkList
 from ..models.models import User # models.py에서 User 모델 가져오기
 from ..db import get_db
 
@@ -19,13 +19,13 @@ router = APIRouter()
 
 @router.post(
     "/", 
-    response_model=schemas.BookmarkRead, 
+    response_model=BookmarkRead, 
     status_code=status.HTTP_201_CREATED
 )
 def create_bookmark(
     *,
     db: Session = Depends(get_db),
-    bookmark_in: schemas.BookmarkCreate,
+    bookmark_in: BookmarkCreate,
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -40,7 +40,7 @@ def create_bookmark(
     return bookmark
 
 
-@router.get("/", response_model=schemas.BookmarkList)
+@router.get("/", response_model=BookmarkList)
 def read_bookmarks(
     *,
     db: Session = Depends(get_db),
@@ -74,7 +74,7 @@ def read_bookmarks(
     
     total_pages = math.ceil(total / page_size) if total > 0 else 1
     
-    return schemas.BookmarkList(
+    return BookmarkList(
         bookmarks=bookmarks,
         total=total,
         page=page,
@@ -83,13 +83,13 @@ def read_bookmarks(
     )
 
 
-@router.put("/{bookmark_id}", response_model=schemas.BookmarkRead)
+@router.put("/{bookmark_id}", response_model=BookmarkRead)
 def update_bookmark_category(
     *,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
     bookmark_id: int,
-    bookmark_in: schemas.BookmarkUpdate
+    bookmark_in: BookmarkUpdate
 ):
     """
     북마크의 카테고리를 변경합니다. (예: 다른 카테고리로 이동)

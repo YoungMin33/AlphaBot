@@ -7,7 +7,7 @@ from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
 from app.db import engine, get_db, Base
-from app.routers import auth, chat, user
+from app.routers import auth, chat, user, category, bookmark
 
 app = FastAPI()
 
