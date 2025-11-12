@@ -32,7 +32,7 @@ export default function RightMenu({ onSelectStock }: RightMenuProps) {
       <Button 
         variant="primary" 
         size="medium" 
-        onClick={() => navigate('/bookmarks')}
+        onClick={() => navigate('/admin/categories')}
       >
         <FaBars /> 카테고리
       </Button>
