@@ -36,6 +36,13 @@ class ChatRead(BaseModel):
         from_attributes = True
 
 
+class ChatByStockResponse(BaseModel):
+    chat_id: int
+    title: str
+    stock_code: str
+    existed: bool
+
+
 # 채팅방 생성/수정 요청 스키마
 class ChatCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=100, description="채팅방 제목")
