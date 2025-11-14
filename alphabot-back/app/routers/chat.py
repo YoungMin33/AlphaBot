@@ -6,7 +6,7 @@ from sqlalchemy import func
 from app.core.dependencies import get_current_user
 from app.db import get_db
 from app.schemas.chats import MessageCreate, MessageRead, ChatRead, ChatCreate, ChatByStockResponse
-from app.models import User, Chat, Message, TrashEnum
+from app.models.models import User, Chat, Message, TrashEnum
 from app.services.chat_service import (
     normalize_stock_code,
     upsert_chat_by_stock,

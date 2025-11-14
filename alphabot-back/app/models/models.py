@@ -29,9 +29,9 @@ class User(Base):
     __table_args__ = {'schema': 'public'}
 
     user_id = Column(Integer, primary_key=True, autoincrement=True)
+    login_id = Column(String(100), nullable=False, unique=True)
     username = Column(String(50), nullable=False)
-    email = Column(String(100), nullable=False, unique=True)
-    password = Column(String(255), nullable=False)
+    hashed_pw = Column(String(255), nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
 
     # --- Relationships ---
@@ -46,7 +46,7 @@ class User(Base):
     categories = relationship("Category", back_populates="user", cascade="all, delete")
 
     def __repr__(self):
-        return f"<User(user_id={self.user_id}, email='{self.email}')>"
+        return f"<User(user_id={self.user_id}, login_id='{self.login_id}')>"
 
 class Chat(Base):
     __tablename__ = 'chat'

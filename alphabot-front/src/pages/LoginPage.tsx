@@ -16,7 +16,7 @@ const LoginPage: React.FC = () => {
         formData.append('password', password);
 
         try {
-            const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+            const response = await fetch('http://localhost:8080/api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -33,7 +33,7 @@ const LoginPage: React.FC = () => {
             
             console.log('로그인 성공! 받은 토큰:', data.access_token);
             
-            localStorage.setItem('accessToken', data.access_token);
+            localStorage.setItem('authToken', data.access_token);
             
             navigate('/chat');
 
