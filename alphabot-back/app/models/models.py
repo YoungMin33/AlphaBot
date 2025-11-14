@@ -1,7 +1,7 @@
 import enum
 from sqlalchemy import (
     create_engine, Column, Integer, String, Text, TIMESTAMP, 
-    ForeignKey, Enum, BigInteger, Numeric, Date, UniqueConstraint
+    ForeignKey, Enum, BigInteger, Numeric, Date, UniqueConstraint, Index, text
 )
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import func # func.now()를 위해 임포트
@@ -42,17 +42,31 @@ class User(Base):
     messages = relationship("Message", back_populates="user", cascade="all, delete")
     # 'fk_bookmark_user_id' FK에 대응
     bookmarks = relationship("Bookmark", back_populates="user", cascade="all, delete")
+    # 'fk_category_user_id' FK에 대응
+    categories = relationship("Category", back_populates="user", cascade="all, delete")
 
     def __repr__(self):
         return f"<User(user_id={self.user_id}, email='{self.email}')>"
 
 class Chat(Base):
     __tablename__ = 'chat'
-    __table_args__ = {'schema': 'public'}
+    __table_args__ = (
+        # 조건부 유니크 인덱스(사용자와 종목코드 조합)
+        Index(
+            'ux_chat_user_stock_active',
+            'user_id',
+            'stock_code',
+            unique=True,
+            postgresql_where=text("stock_code IS NOT NULL AND trash_can = 'out'")
+        ),
+        {'schema': 'public'},
+    )
 
     chat_id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('public.users.user_id', ondelete="CASCADE"), nullable=False)
     title = Column(String(100), nullable=False)
+    # 종목별 채팅 기능을 위한 선택적 종목 코드 (예: AAPL). 인덱스 부여.
+    stock_code = Column(String(20), nullable=True, index=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
     lastchat_at = Column(TIMESTAMP, nullable=True)
     trash_can = Column(Enum(TrashEnum, name='trash_enum', create_type=False), server_default=TrashEnum.in_.value)
@@ -93,12 +107,14 @@ class Category(Base):
     __table_args__ = {'schema': 'public'}
 
     category_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('public.users.user_id', ondelete="CASCADE"), nullable=False)
     title = Column(String(50), nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
     
     # --- Relationships ---
     # Category(1)가 Bookmark(N)를 가짐 (SQL에는 FK가 없었지만, 컬럼이 존재하므로 관계 정의)
     bookmarks = relationship("Bookmark", back_populates="category")
+    user = relationship("User", back_populates="categories")
 
     def __repr__(self):
         return f"<Category(category_id={self.category_id}, title='{self.title}')>"

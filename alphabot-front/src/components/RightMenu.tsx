@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 import Button from './Button/Button'; 
 import { FaBars, FaHistory, FaTrash, FaUser, FaSignOutAlt, FaBookmark } from 'react-icons/fa';
 import StockSearch from './StockSearch';
@@ -27,11 +28,11 @@ export default function RightMenu({ onSelectStock }: RightMenuProps) {
   };
 
   return (
-    <aside className="sidebar right">
+    <Sidebar>
       <Button 
         variant="primary" 
         size="medium" 
-        onClick={() => navigate('/bookmarks')}
+        onClick={() => navigate('/admin/categories')}
       >
         <FaBars /> 카테고리
       </Button>
@@ -45,9 +46,9 @@ export default function RightMenu({ onSelectStock }: RightMenuProps) {
       </Button>
       
       {showStockSearch && (
-        <div style={{ marginTop: '12px' }}>
+        <SearchContainer>
           <StockSearch onSelectStock={handleStockSelect} />
-        </div>
+        </SearchContainer>
       )}
       
       <Button 
@@ -81,6 +82,34 @@ export default function RightMenu({ onSelectStock }: RightMenuProps) {
       >
         <FaSignOutAlt /> 로그아웃
       </Button>
-    </aside>
+    </Sidebar>
   );
 }
+
+const Sidebar = styled.aside`
+  width: 240px;
+  background: #ffffff;
+  border-left: 1px solid #e5e5e5;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #d9d9e3;
+    border-radius: 3px;
+  }
+`;
+
+const SearchContainer = styled.div`
+  margin-top: 12px;
+`;
