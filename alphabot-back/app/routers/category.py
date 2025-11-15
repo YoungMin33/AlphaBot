@@ -17,7 +17,7 @@ from app.core.dependencies import get_current_user
 router = APIRouter()
 
 
-@router.post("/", response_model=Category, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=Category, status_code=status.HTTP_201_CREATED)
 def create_category(
     *,
     db: Session = Depends(get_db),
@@ -42,7 +42,7 @@ def create_category(
     return category
 
 
-@router.get("/", response_model=CategoryList)
+@router.get("", response_model=CategoryList)
 def read_categories(
     *,
     db: Session = Depends(get_db),

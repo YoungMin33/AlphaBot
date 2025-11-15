@@ -103,7 +103,7 @@ export const CategoryList: React.FC<Props> = ({
   pageSize,
 }) => {
   const { deleteMutation } = useCategoryMutations();
-  const totalPages = Math.ceil(total / pageSize);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
   
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -141,10 +141,12 @@ export const CategoryList: React.FC<Props> = ({
       <ListWrapper>
         {categories.length > 0 ? (
           categories.map((cat) => (
-            <CategoryCard key={cat.id}>
+            <CategoryCard key={cat.category_id}>
               <CardContent>
                 <CardTitle>{cat.title}</CardTitle>
-                <CardMeta>포함된 항목 수: {cat.item_count}</CardMeta>
+                <CardMeta>
+                  생성일: {new Date(cat.created_at).toLocaleString()}
+                </CardMeta>
               </CardContent>
               
               {isAdmin && (
@@ -159,8 +161,11 @@ export const CategoryList: React.FC<Props> = ({
                   <Button
                     variant="ghost" 
                     size="small"
-                    onClick={() => handleDelete(cat.id)}
-                    disabled={deleteMutation.isPending && deleteMutation.variables === cat.id}
+                    onClick={() => handleDelete(cat.category_id)}
+                    disabled={
+                      deleteMutation.isPending &&
+                      deleteMutation.variables === cat.category_id
+                    }
                   >
                     삭제
                   </Button>

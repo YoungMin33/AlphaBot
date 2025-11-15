@@ -68,7 +68,7 @@ const BookmarkPage: React.FC = () => {
     ? bookmarks 
     : bookmarks.filter(b => b.categoryId === selectedCategory);
 
-  const handleDeleteBookmark = (id: number) => {
+  const handleDeleteBookmark = (_bookmarkId: number) => {
     if (window.confirm('이 메시지를 북마크에서 삭제하시겠습니까?')) {
       alert('북마크가 삭제되었습니다.');
       // 실제로는 여기서 상태 업데이트
@@ -110,8 +110,8 @@ const BookmarkPage: React.FC = () => {
             {categories.map(cat => (
               <CategoryItem
                 key={cat.id}
-                active={selectedCategory === cat.id}
-                color={cat.color}
+                $active={selectedCategory === cat.id}
+                $color={cat.color}
                 onClick={() => setSelectedCategory(cat.id)}
               >
                 <FaFolder /> {cat.title}
@@ -242,24 +242,24 @@ const SidebarTitle = styled.h3`
   border-bottom: 2px solid #f0f0f0;
 `;
 
-const CategoryItem = styled.button<{ active: boolean; color: string }>`
+const CategoryItem = styled.button<{ $active: boolean; $color: string }>`
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
   padding: 12px;
-  background: ${props => props.active ? `${props.color}15` : 'transparent'};
+  background: ${props => props.$active ? `${props.$color}15` : 'transparent'};
   border: none;
-  border-left: 3px solid ${props => props.active ? props.color : 'transparent'};
-  color: ${props => props.active ? props.color : '#666'};
+  border-left: 3px solid ${props => props.$active ? props.$color : 'transparent'};
+  color: ${props => props.$active ? props.$color : '#666'};
   font-size: 14px;
-  font-weight: ${props => props.active ? '600' : '400'};
+  font-weight: ${props => props.$active ? '600' : '400'};
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
 
   &:hover {
-    background: ${props => `${props.color}10`};
+    background: ${props => `${props.$color}10`};
   }
 `;
 

@@ -75,8 +75,8 @@ export const CategoryForm: React.FC<Props> = ({ categoryToEdit, onClose }) => {
     const data: CategoryCreateUpdateDTO = { title };
 
     try {
-      if (isEditing) {
-        await updateMutation.mutateAsync({ id: categoryToEdit.id, data });
+      if (isEditing && categoryToEdit) {
+        await updateMutation.mutateAsync({ categoryId: categoryToEdit.category_id, data });
       } else {
         await createMutation.mutateAsync(data);
       }
