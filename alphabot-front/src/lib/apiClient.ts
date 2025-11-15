@@ -8,7 +8,8 @@ const getAuthToken = (): string | null => {
 
 export const apiClient = axios.create({
   // .env 파일 등을 통해 API 서버 주소를 설정합니다.
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/', 
+  // 개발 환경에서는 백엔드가 8080 포트에서 실행됨
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080', 
 });
 
 // 요청 인터셉터: 모든 요청에 인증 토큰(Bearer) 자동 삽입

@@ -8,7 +8,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from app.models import Chat, Message, RoleEnum, TrashEnum, User
+from app.models.models import Chat, Message, RoleEnum, TrashEnum, User
 from app.schemas.chats import MessageCreate
 
 # 이 모듈은 OpenAI API를 활용해 챗봇 응답을 생성하고,
@@ -17,7 +17,7 @@ from app.schemas.chats import MessageCreate
 
 try:
     # OpenAI Python SDK v1.x 사용
-    from openai import OpenAI
+    from openai import OpenAI  # type: ignore[import-not-found]
 except Exception:  # pragma: no cover - openai 미설치/런타임 환경 보호
     OpenAI = None  # type: ignore
 

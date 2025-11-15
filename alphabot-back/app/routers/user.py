@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app import models
+from app.models.models import User as ORMUser
 from app.schemas.user import User, UserCreate
 from app.core import dependencies
 from app.crud import crud_user
@@ -35,7 +35,7 @@ def signup(
 
 @router.get("/users/me", response_model=User)
 def read_users_me(
-    current_user: models.User = Depends(dependencies.get_current_user),
+    current_user: ORMUser = Depends(dependencies.get_current_user),
 ):
     """
     ## 내 정보 조회
