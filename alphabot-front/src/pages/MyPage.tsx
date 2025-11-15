@@ -103,10 +103,10 @@ const MyPage: React.FC = () => {
         </Header>
 
         <TabContainer>
-          <Tab active={activeTab === 'profile'} onClick={() => setActiveTab('profile')}>
+          <Tab $active={activeTab === 'profile'} onClick={() => setActiveTab('profile')}>
             <FaUser /> 프로필 수정
           </Tab>
-          <Tab active={activeTab === 'password'} onClick={() => setActiveTab('password')}>
+          <Tab $active={activeTab === 'password'} onClick={() => setActiveTab('password')}>
             <FaLock /> 비밀번호 변경
           </Tab>
         </TabContainer>
@@ -254,17 +254,17 @@ const TabContainer = styled.div`
   border-bottom: 2px solid #e0e0e0;
 `;
 
-const Tab = styled.button<{ active: boolean }>`
+const Tab = styled.button<{ $active: boolean }>`
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: ${props => props.active ? 'white' : 'transparent'};
+  background: ${props => props.$active ? 'white' : 'transparent'};
   border: none;
-  border-bottom: 3px solid ${props => props.active ? '#667eea' : 'transparent'};
-  color: ${props => props.active ? '#667eea' : '#999'};
+  border-bottom: 3px solid ${props => props.$active ? '#667eea' : 'transparent'};
+  color: ${props => props.$active ? '#667eea' : '#999'};
   font-size: 16px;
-  font-weight: ${props => props.active ? '600' : '400'};
+  font-weight: ${props => props.$active ? '600' : '400'};
   cursor: pointer;
   transition: all 0.3s;
 

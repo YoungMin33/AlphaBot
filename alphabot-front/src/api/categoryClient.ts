@@ -6,7 +6,7 @@ import type {
   CategoryQuery,
 } from '@/components/category/category.types';
 
-const API_BASE_URL = '/api/categories';
+const API_BASE_URL = '/categories';
 
 // 1. 목록/검색/페이지네이션 (GET)
 export const listCategories = async (query: CategoryQuery): Promise<CategoryList> => {

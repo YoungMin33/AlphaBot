@@ -25,14 +25,14 @@ export const useCategoryMutations = () => {
 
   // 수정 (PUT)
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CategoryCreateUpdateDTO }) =>
-      updateCategory(id, data),
+    mutationFn: ({ categoryId, data }: { categoryId: number; data: CategoryCreateUpdateDTO }) =>
+      updateCategory(categoryId, data),
     onSuccess: invalidateLists, // 성공 시 목록 캐시 무효화
   });
 
   // 삭제 (DELETE)
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteCategory(id),
+    mutationFn: (categoryId: number) => deleteCategory(categoryId),
     onSuccess: invalidateLists, // 성공 시 목록 캐시 무효화
   });
 

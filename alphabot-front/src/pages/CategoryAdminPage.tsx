@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom'; // 1. react-router-dom에서 Link 가져오기
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
 import { CategoryList } from '@/components/category/CategoryList';
@@ -71,7 +71,12 @@ export const CategoryAdminPage: React.FC = () => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [showForm, setShowForm] = useState(false);
 
-  const { data, isLoading, isError, error } = useCategories(query);
+  const isAuthenticated =
+    typeof window !== 'undefined' && Boolean(localStorage.getItem('authToken'));
+
+  const { data, isLoading, isError, error } = useCategories(query, {
+    enabled: isAuthenticated,
+  });
 
   // (이하 핸들러 함수들은 이전과 동일)
   const handleSearch = (term: string) => {
@@ -95,6 +100,38 @@ export const CategoryAdminPage: React.FC = () => {
   const isAxiosError = (e: any): e is AxiosError => {
     return e && typeof e === 'object' && e.isAxiosError === true;
   };
+  if (!isAuthenticated) {
+    return (
+      <PageWrapper>
+        <PageLayoutLimiter>
+          <HeaderContainer>
+            <Button
+              as={Link}
+              to="/chat"
+              variant="ghost"
+              size="small"
+            >
+              <span>←</span>
+              <span>뒤로가기</span>
+            </Button>
+          </HeaderContainer>
+
+          <ContentContainer>
+            <PageHeader>
+              <PageTitle>카테고리 관리</PageTitle>
+            </PageHeader>
+            <p style={{ color: '#555', marginBottom: '24px' }}>
+              카테고리 목록을 보려면 먼저 로그인하세요.
+            </p>
+            <Button as={Link} to="/login" variant="primary" size="small">
+              로그인 페이지로 이동
+            </Button>
+          </ContentContainer>
+        </PageLayoutLimiter>
+      </PageWrapper>
+    );
+  }
+
   if (isLoading && !data) return <LoadingSpinner />;
   if (isError && isAxiosError(error)) {
     const statusCode = error.response?.status;
@@ -146,14 +183,14 @@ export const CategoryAdminPage: React.FC = () => {
           )}
 
           <CategoryList
-            categories={data?.items || []}
+            categories={data?.categories ?? []}
             isAdmin={isAdmin}
             onEdit={handleEdit}
             onSearch={handleSearch}
             onPageChange={handlePageChange}
-            page={data?.page || 1}
-            total={data?.total || 0}
-            pageSize={data?.page_size || 10}
+            page={data?.page ?? query.page}
+            total={data?.total ?? 0}
+            pageSize={data?.page_size ?? query.page_size}
           />
         </ContentContainer>
       </PageLayoutLimiter>
