@@ -1,11 +1,13 @@
-# 가상환경 및 라이브러리 무시
+__pycache__/
+*.pyc
+
+.venv/
+venv/
+ENV/
+.env
 Lib/
 site-packages/
 Scripts/
-__pycache__/
-*.pyc
-.env
 .venv
-venv/
-alphabot/Lib/  # 경로에 맞춰서 추가함
+alphabot/Lib/
 alphabot/
