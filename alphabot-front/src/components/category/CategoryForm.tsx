@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useCategoryMutations } from '@/hooks/useCategoryMutations';
+import { useCategoryMutations } from '@/hooks/useCategoryMutations'; 
+// 👆 import 경로가 hooks/useCategoryMutations.ts를 가리키는지 확인하세요.
 import type { Category, CategoryCreateUpdateDTO } from './category.types';
 import { AxiosError } from 'axios';
 import styled from 'styled-components';
-import Button from '@/components/Button/Button';
+import Button from '@/components/Button/Button'; 
+// 👆 import 경로가 components/Button/Button.tsx를 가리키는지 확인하세요.
 
-// --- Styled Components ---
+// --- Styled Components (이전과 동일) ---
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -76,7 +78,8 @@ export const CategoryForm: React.FC<Props> = ({ categoryToEdit, onClose }) => {
 
     try {
       if (isEditing && categoryToEdit) {
-        await updateMutation.mutateAsync({ categoryId: categoryToEdit.category_id, data });
+        // 👇 [수정] 'categoryId'를 'id'로, 'categoryToEdit.category_id'를 'categoryToEdit.id'로 변경
+        await updateMutation.mutateAsync({ id: categoryToEdit.id, data });
       } else {
         await createMutation.mutateAsync(data);
       }

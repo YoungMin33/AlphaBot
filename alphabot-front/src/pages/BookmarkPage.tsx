@@ -1,98 +1,134 @@
+/**
+ * @file src/pages/BookmarkPage.tsx
+ * @description 저장된 메시지 (북마크) 페이지.
+ * [수정] 런타임 오류 방지를 위해 isError 및 데이터 핸들링 강화
+ */
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaArrowLeft, FaBookmark, FaTrash, FaFolder, FaPlus } from 'react-icons/fa';
+import { AxiosError } from 'axios';
 
-interface BookmarkedMessage {
-  id: number;
-  content: string;
-  chatTitle: string;
-  createdAt: string;
-  categoryId: number;
-}
+// --- API 훅 및 타입 임포트 ---
+import { useAuth } from '@/hooks/useAuth';
+import { useCategories } from '@/hooks/useCategories';
+import { useCategoryMutations } from '@/hooks/useCategoryMutations';
+import { useSavedMessages, useBookmarkMutations } from '@/hooks/useSavedMessages'; 
+import { LoadingSpinner } from '@/components/common/LoadingSpinner'; 
+import type { Category } from '@/components/category/category.types';
 
-interface Category {
-  id: number;
-  title: string;
-  color: string;
-}
-
-const BookmarkPage: React.FC = () => {
+export const BookmarkPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth(); 
   
-  // Mock 카테고리
-  const [categories, setCategories] = useState<Category[]>([
-    { id: 0, title: '전체', color: '#667eea' },
-    { id: 1, title: '투자 전략', color: '#e74c3c' },
-    { id: 2, title: '재무제표 분석', color: '#27ae60' },
-    { id: 3, title: '시장 동향', color: '#f39c12' },
-  ]);
-
-  const [selectedCategory, setSelectedCategory] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState(0); 
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [modalError, setModalError] = useState<string | null>(null); 
 
-  // Mock 북마크된 메시지
-  const [bookmarks] = useState<BookmarkedMessage[]>([
-    {
-      id: 1,
-      content: 'AAPL의 2024년 3분기 실적은 전년 대비 8% 성장했으며, 특히 서비스 부문의 성장이 두드러졌습니다.',
-      chatTitle: 'AAPL 주식 분석',
-      createdAt: '2024-09-15',
-      categoryId: 2
-    },
-    {
-      id: 2,
-      content: '현재 시장 상황에서는 방어적인 포지션을 유지하면서 점진적으로 매수하는 전략이 유효할 것으로 보입니다.',
-      chatTitle: '투자 전략 상담',
-      createdAt: '2024-09-14',
-      categoryId: 1
-    },
-    {
-      id: 3,
-      content: 'NVDA는 AI 칩 시장에서 독보적인 위치를 차지하고 있으며, 향후 5년간 연평균 25% 이상의 성장이 예상됩니다.',
-      chatTitle: 'NVDA 분석 요청',
-      createdAt: '2024-09-13',
-      categoryId: 3
-    },
-    {
-      id: 4,
-      content: 'P/E Ratio가 업계 평균보다 낮고, ROE가 높아 저평가되어 있다고 판단됩니다.',
-      chatTitle: 'MSFT 재무제표',
-      createdAt: '2024-09-12',
-      categoryId: 2
-    },
-  ]);
+  // --- React Query 훅 (데이터 로딩) ---
+  const { 
+    data: categoriesData, 
+    isLoading: categoriesLoading, 
+    isError: categoriesError, // 👈 isError 상태
+    error: categoriesErrorObject // 👈 error 객체
+  } = useCategories({
+    page: 1,
+    page_size: 99, 
+    search: '',
+  });
 
-  const filteredBookmarks = selectedCategory === 0 
-    ? bookmarks 
-    : bookmarks.filter(b => b.categoryId === selectedCategory);
+  const { 
+    data: bookmarksData, 
+    isLoading: bookmarksLoading,
+    isError: bookmarksError, // 👈 isError 상태
+    error: bookmarksErrorObject // 👈 error 객체
+  } = useSavedMessages(selectedCategory);
+  
+  const bookmarks = bookmarksData || [];
 
-  const handleDeleteBookmark = (_bookmarkId: number) => {
+  const { createMutation } = useCategoryMutations();
+  const { deleteMutation: deleteBookmarkMutation } = useBookmarkMutations();
+
+  // --- 핸들러 함수 (API 연동) ---
+  // (handleAddCategory, handleDeleteBookmark 함수는 이전과 동일)
+  const handleDeleteBookmark = async (bookmarkId: number) => {
     if (window.confirm('이 메시지를 북마크에서 삭제하시겠습니까?')) {
-      alert('북마크가 삭제되었습니다.');
-      // 실제로는 여기서 상태 업데이트
+      try {
+        await deleteBookmarkMutation.mutateAsync(bookmarkId);
+        alert('북마크가 삭제되었습니다.');
+      } catch (error) {
+        alert('삭제에 실패했습니다.');
+      }
     }
   };
 
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     if (!newCategoryName.trim()) {
-      alert('카테고리 이름을 입력하세요.');
+      setModalError('카테고리 이름을 입력하세요.');
       return;
     }
-    
-    const colors = ['#3498db', '#9b59b6', '#1abc9c', '#e67e22', '#34495e'];
-    const newCategory: Category = {
-      id: categories.length,
-      title: newCategoryName,
-      color: colors[Math.floor(Math.random() * colors.length)]
-    };
-    
-    setCategories([...categories, newCategory]);
-    setNewCategoryName('');
-    setShowNewCategoryModal(false);
-    alert('새 카테고리가 추가되었습니다.');
+    setModalError(null);
+    try {
+      await createMutation.mutateAsync({ title: newCategoryName });
+      setNewCategoryName('');
+      setShowNewCategoryModal(false);
+      alert('새 카테고리가 추가되었습니다.');
+    } catch (err) {
+      if (err instanceof AxiosError && err.response?.status === 400) {
+        setModalError('제목이 중복되거나 유효하지 않습니다.');
+      } else {
+        setModalError('생성에 실패했습니다. (권한 또는 서버 오류)');
+      }
+    }
   };
+
+
+  // --- 렌더링 로직 ---
+
+  // 👇 [수정] 런타임 오류 방지 (Axios 에러인지 확인)
+  const isAxiosError = (err: unknown): err is AxiosError => {
+    return (err as AxiosError)?.isAxiosError === true;
+  };
+  
+  // [수정] 카테고리 또는 북마크 로딩 중
+  if (categoriesLoading || bookmarksLoading) {
+    // 💡 [개선] 로딩 스피너를 페이지 중앙에 배치
+    return (
+      <Container style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <LoadingSpinner />
+      </Container>
+    );
+  }
+
+  // 👇 [수정] 런타임 오류 방지 (에러 발생 시)
+  if (categoriesError || bookmarksError) {
+    const errorToShow = categoriesError ? categoriesErrorObject : bookmarksErrorObject;
+    let errorMessage = "데이터를 불러오는 중 오류가 발생했습니다.";
+    
+    if (isAxiosError(errorToShow) && errorToShow.response) {
+      if (errorToShow.response.status === 503) {
+        errorMessage = `[백엔드 오류] 503 Service Unavailable. 백엔드(alphabot-back-dev)가 실행 중인지 확인하세요. (app/main.py 오류 점검 필요)`;
+      } else {
+        errorMessage = `오류 코드 ${errorToShow.response.status}: ${errorToShow.message}`;
+      }
+    } else if (errorToShow instanceof Error) {
+      errorMessage = errorToShow.message;
+    }
+    
+    return <div style={{ color: 'red', padding: '20px' }}>{errorMessage}</div>;
+  }
+
+  // [수정] 런타임 오류 방지 (데이터 가공)
+  const categories: Category[] = [
+    { id: 0, title: '전체', color: '#667eea', item_count: bookmarks.length, created_at: '' },
+    // 👇 [수정] ?.items?.map 으로 안전하게 접근
+    ...(categoriesData?.items?.map(cat => ({ 
+        ...cat,
+        color: cat.color || '#9b59b6', 
+    })) || [])
+  ];
 
   return (
     <Container>
@@ -105,40 +141,46 @@ const BookmarkPage: React.FC = () => {
         </Header>
 
         <MainContent>
+          {/* 카테고리 사이드바 (데이터 로딩 보장됨) */}
           <Sidebar>
             <SidebarTitle>카테고리</SidebarTitle>
             {categories.map(cat => (
               <CategoryItem
                 key={cat.id}
                 $active={selectedCategory === cat.id}
-                $color={cat.color}
+                $color={cat.color || '#999'}
                 onClick={() => setSelectedCategory(cat.id)}
               >
                 <FaFolder /> {cat.title}
-                {cat.id === 0 && ` (${bookmarks.length})`}
-                {cat.id !== 0 && ` (${bookmarks.filter(b => b.categoryId === cat.id).length})`}
+                {cat.id === 0 ? ` (${bookmarks.length})` : ` (${cat.item_count})`}
               </CategoryItem>
             ))}
-            <AddCategoryButton onClick={() => setShowNewCategoryModal(true)}>
-              <FaPlus /> 새 카테고리
-            </AddCategoryButton>
+            {isAdmin && (
+              <AddCategoryButton onClick={() => setShowNewCategoryModal(true)}>
+                <FaPlus /> 새 카테고리
+              </AddCategoryButton>
+            )}
           </Sidebar>
 
+          {/* 북마크 목록 (데이터 로딩 보장됨) */}
           <BookmarkList>
-            {filteredBookmarks.length === 0 ? (
+            {bookmarks.length === 0 ? ( 
               <EmptyState>
                 <FaBookmark size={48} color="#ddd" />
                 <EmptyText>저장된 메시지가 없습니다.</EmptyText>
               </EmptyState>
             ) : (
-              filteredBookmarks.map(bookmark => (
+              bookmarks.map(bookmark => ( 
                 <BookmarkCard key={bookmark.id}>
                   <CardHeader>
                     <ChatInfo>
                       <ChatTitle>{bookmark.chatTitle}</ChatTitle>
                       <DateText>{bookmark.createdAt}</DateText>
                     </ChatInfo>
-                    <DeleteButton onClick={() => handleDeleteBookmark(bookmark.id)}>
+                    <DeleteButton 
+                      onClick={() => handleDeleteBookmark(bookmark.id)}
+                      disabled={deleteBookmarkMutation.isPending && deleteBookmarkMutation.variables === bookmark.id}
+                    >
                       <FaTrash />
                     </DeleteButton>
                   </CardHeader>
@@ -153,6 +195,7 @@ const BookmarkPage: React.FC = () => {
         </MainContent>
       </Content>
 
+      {/* 모달 */}
       {showNewCategoryModal && (
         <Modal onClick={() => setShowNewCategoryModal(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -164,8 +207,17 @@ const BookmarkPage: React.FC = () => {
               onChange={(e) => setNewCategoryName(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
             />
+            
+            {modalError && <p style={{ color: 'red', fontSize: '14px' }}>{modalError}</p>}
+            
             <ModalButtons>
-              <ModalButton primary onClick={handleAddCategory}>추가</ModalButton>
+              <ModalButton 
+                primary 
+                onClick={handleAddCategory}
+                disabled={createMutation.isPending} 
+              >
+                {createMutation.isPending ? '추가 중...' : '추가'}
+              </ModalButton>
               <ModalButton onClick={() => setShowNewCategoryModal(false)}>취소</ModalButton>
             </ModalButtons>
           </ModalContent>
@@ -175,6 +227,7 @@ const BookmarkPage: React.FC = () => {
   );
 };
 
+// --- Styled Components (기존 코드와 동일) ---
 const Container = styled.div`
   min-height: 100vh;
   background: #f5f5f5;
@@ -436,4 +489,3 @@ const ModalButton = styled.button<{ primary?: boolean }>`
 `;
 
 export default BookmarkPage;
-
