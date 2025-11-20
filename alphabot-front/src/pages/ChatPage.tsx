@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
 import ChatArea from '../components/ChatArea';
-import StockSearch from '../components/StockSearch';
 import LeftSidebar from '../components/LeftSidebar';
 import RightMenu from '../components/RightMenu';
+import { FaUser } from 'react-icons/fa';
 
 interface Stock {
   code: string;
@@ -51,6 +51,10 @@ const ChatPage: React.FC = () => {
     navigate('/chat');
   };
 
+  const handleGoToMyPage = () => {
+    navigate('/mypage');
+  };
+
   return (
     <Container>
       <ChatHeader>
@@ -59,22 +63,24 @@ const ChatPage: React.FC = () => {
             <LogoIcon>💼</LogoIcon>
             <LogoText>Alpha Bot</LogoText>
           </Logo>
-          
-          <SearchWrapper>
-            <StockSearch onSelectStock={handleSelectStock} />
-          </SearchWrapper>
 
-          {selectedStock && (
-            <SelectedStockInfo>
-              <StockBadge>
-                <StockCode>{selectedStock.code}</StockCode>
-                <StockName>{selectedStock.name}</StockName>
-              </StockBadge>
-              <ClearButton onClick={handleClearSelection} title="종목 선택 해제">
-                ✕
-              </ClearButton>
-            </SelectedStockInfo>
-          )}
+          <HeaderRight>
+            {selectedStock && (
+              <SelectedStockInfo>
+                <StockBadge>
+                  <StockCode>{selectedStock.code}</StockCode>
+                  <StockName>{selectedStock.name}</StockName>
+                </StockBadge>
+                <ClearButton onClick={handleClearSelection} title="종목 선택 해제">
+                  ✕
+                </ClearButton>
+              </SelectedStockInfo>
+            )}
+            <MyPageButton type="button" onClick={handleGoToMyPage}>
+              <FaUser aria-hidden />
+              <span>마이페이지</span>
+            </MyPageButton>
+          </HeaderRight>
         </HeaderContent>
       </ChatHeader>
 
@@ -129,9 +135,11 @@ const LogoText = styled.span`
   color: #202123;
 `;
 
-const SearchWrapper = styled.div`
-  flex: 1;
-  max-width: 600px;
+const HeaderRight = styled.div`
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 `;
 
 const SelectedStockInfo = styled.div`
@@ -183,6 +191,31 @@ const MainContent = styled.main`
   overflow: hidden;
   display: flex;
   width: 100%;
+`;
+
+const MyPageButton = styled.button`
+  background: #4169e1;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background: #3558b8;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 `;
 
 export default ChatPage;

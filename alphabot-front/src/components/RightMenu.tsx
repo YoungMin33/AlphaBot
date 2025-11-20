@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import Button from './Button/Button'; 
-import { FaBars, FaHistory, FaTrash, FaUser, FaSignOutAlt, FaBookmark } from 'react-icons/fa';
+import { FaBars, FaHistory, FaTrash, FaSignOutAlt, FaBookmark } from 'react-icons/fa';
 import StockSearch from './StockSearch';
 
 interface RightMenuProps {
@@ -57,14 +57,6 @@ export default function RightMenu({ onSelectStock }: RightMenuProps) {
         onClick={() => navigate('/trash')}
       >
         <FaTrash /> 휴지통
-      </Button>
-
-      <Button 
-        variant="secondary" 
-        size="medium" 
-        onClick={() => navigate('/mypage')}
-      >
-        <FaUser /> 마이페이지
       </Button>
 
       <Button 
