@@ -9,6 +9,7 @@ from app.schemas.chats import (
     MessageRead,
     ChatRead,
     ChatCreate,
+    ChatUpdate,
     ChatByStockResponse,
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -170,4 +171,43 @@ def get_chat_room_by_stock(
     )
     if not chat:
         raise HTTPException(status_code=404, detail="Chat room for stock not found")
+    return chat
+
+
+@router.patch("/rooms/{room_id}", response_model=ChatRead)
+def update_chat_room(
+    room_id: int,
+    chat_in: ChatUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """채팅방 정보를 수정 (현재는 제목 및 휴지통 상태만 지원)"""
+    chat = (
+        db.query(Chat)
+        .filter(Chat.chat_id == room_id, Chat.user_id == current_user.user_id)
+        .first()
+    )
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat room not found or permission denied")
+
+    updated = False
+
+    if chat_in.title is not None:
+        normalized_title = chat_in.title.strip()
+        if not normalized_title:
+            raise HTTPException(status_code=400, detail="Title must not be empty")
+        chat.title = normalized_title
+        updated = True
+
+    if chat_in.trash_can is not None:
+        if chat_in.trash_can not in (TrashEnum.in_.value, TrashEnum.out.value):
+            raise HTTPException(status_code=400, detail="Invalid trash_can value")
+        chat.trash_can = chat_in.trash_can
+        updated = True
+
+    if not updated:
+        return chat
+
+    db.commit()
+    db.refresh(chat)
     return chat
