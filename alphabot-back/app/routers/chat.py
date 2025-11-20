@@ -1,15 +1,24 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 
 from app.core.dependencies import get_current_user
 from app.db import get_db
-from app.schemas.chats import MessageCreate, MessageRead, ChatRead, ChatCreate, ChatByStockResponse
+from app.schemas.chats import (
+    MessageCreate,
+    MessageRead,
+    ChatRead,
+    ChatCreate,
+    ChatByStockResponse,
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+)
 from app.models.models import User, Chat, Message, TrashEnum
 from app.services.chat_service import (
     normalize_stock_code,
     upsert_chat_by_stock,
+    save_user_message,
+    create_message_and_reply,
 )
 
 router = APIRouter(tags=["chat"])
@@ -23,23 +32,30 @@ def create_message(
     current_user: User = Depends(get_current_user),
 ):
     """특정 채팅방에 메시지를 전송하고 DB에 저장"""
-    # 소유권 확인
-    chat = (
-        db.query(Chat)
-        .filter(Chat.chat_id == room_id, Chat.user_id == current_user.user_id)
-        .first()
-    )
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat room not found or permission denied")
-
-    db_message = Message(chat_id=room_id, user_id=current_user.user_id, content=message.content)
-    db.add(db_message)
-    # 채팅방 최근 대화 시각 갱신
-    chat.lastchat_at = func.now()
-    db.add(chat)
-    db.commit()
-    db.refresh(db_message)
+    db_message = save_user_message(db, room_id=room_id, current_user=current_user, message=message)
     return db_message
+
+
+@router.post(
+    "/rooms/{room_id}/chat-completions",
+    response_model=ChatCompletionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_message_with_openai(
+    room_id: int,
+    request: ChatCompletionRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """사용자 메시지를 저장하고 OpenAI 응답을 생성하여 함께 반환"""
+    user_message, assistant_message = create_message_and_reply(
+        db,
+        room_id=room_id,
+        current_user=current_user,
+        message=MessageCreate(content=request.content),
+        system_prompt=request.system_prompt,
+    )
+    return ChatCompletionResponse(user_message=user_message, assistant_message=assistant_message)
 
 
 @router.get("/rooms/{room_id}/messages", response_model=List[MessageRead])

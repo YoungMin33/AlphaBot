@@ -28,6 +28,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat/:stockCode" element={<ChatPage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/bookmarks" element={<BookmarkPage />} />
           <Route path="/trash" element={<TrashPage />} />

@@ -65,6 +65,32 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSelectStock }) => {
     }
   };
 
+  const getStockFromTerm = (term: string): Stock => {
+    const normalized = term.toUpperCase();
+    const matched = mockStocks.find(
+      stock =>
+        stock.code.toLowerCase() === term.toLowerCase() ||
+        stock.name.toLowerCase() === term.toLowerCase(),
+    );
+    if (matched) {
+      return matched;
+    }
+    return {
+      code: normalized,
+      name: normalized,
+      exchange: '',
+      currentPrice: 0,
+      change: 0,
+      changePercent: 0,
+    };
+  };
+
+  const handleSubmitSearch = () => {
+    const term = searchTerm.trim();
+    if (!term) return;
+    handleSearch(getStockFromTerm(term));
+  };
+
   const handleRecentSearch = (code: string) => {
     const stock = mockStocks.find(s => s.code === code);
     if (stock) {
@@ -94,6 +120,12 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSelectStock }) => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setIsOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleSubmitSearch();
+            }
+          }}
         />
         {searchTerm && (
           <ClearButton onClick={handleClearSearch}>

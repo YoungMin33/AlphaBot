@@ -5,6 +5,7 @@ from typing import List, Tuple, Optional
 import os
 import re
 from fastapi import HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -123,15 +124,16 @@ def save_user_message(
     db: Session, *, room_id: int, current_user: User, message: MessageCreate
 ) -> Message:
     """사용자의 메시지를 해당 채팅방에 저장하고 저장된 레코드를 반환합니다."""
-    _ensure_room_ownership(db, room_id, current_user.user_id)
+    chat = _ensure_room_ownership(db, room_id, current_user.user_id)
 
     db_message = Message(
         chat_id=room_id,
         user_id=current_user.user_id,
-        role=RoleEnum.USER,
+        role=RoleEnum.user,
         content=message.content,
     )
     db.add(db_message)
+    chat.lastchat_at = func.now()
     db.commit()
     db.refresh(db_message)
     return db_message
@@ -145,7 +147,7 @@ def generate_and_save_assistant_reply(
     system_prompt: str | None = None,
 ) -> Message:
     """최근 대화 이력을 바탕으로 OpenAI를 호출해 어시스턴트 응답을 생성하고 저장합니다."""
-    _ensure_room_ownership(db, room_id, current_user.user_id)
+    chat = _ensure_room_ownership(db, room_id, current_user.user_id)
 
     history = _load_chat_history(db, room_id=room_id)  # 대화 이력 로드
     oai_messages = _convert_history_to_openai_messages(history, system_prompt=system_prompt)  # OpenAI 포맷 변환
@@ -155,10 +157,11 @@ def generate_and_save_assistant_reply(
     assistant_message = Message(
         chat_id=room_id,
         user_id=current_user.user_id,
-        role=RoleEnum.ASSISTANT,
+        role=RoleEnum.assistant,
         content=assistant_text,
     )
     db.add(assistant_message)
+    chat.lastchat_at = func.now()
     db.commit()
     db.refresh(assistant_message)
     return assistant_message
@@ -204,7 +207,7 @@ def get_active_chat_by_stock(db: Session, user_id: int, stock_code: str) -> Opti
         .filter(
             Chat.user_id == user_id,
             Chat.stock_code == stock_code,
-            Chat.trash_can == TrashEnum.out,
+            Chat.trash_can == TrashEnum.out.value,
         )
         .first()
     )
@@ -227,7 +230,7 @@ def upsert_chat_by_stock(
         .filter(
             Chat.user_id == user.user_id,
             Chat.stock_code == stock_code,
-            Chat.trash_can == TrashEnum.in_,
+            Chat.trash_can == TrashEnum.in_.value,
         )
         .order_by(Chat.chat_id.desc())
         .first()
@@ -235,7 +238,7 @@ def upsert_chat_by_stock(
 
     #휴지통에 있을 경우 실행
     if trashed:
-        trashed.trash_can = TrashEnum.out
+        trashed.trash_can = TrashEnum.out.value
         if title:
             trashed.title = title.strip() or trashed.title
         db.commit()
@@ -247,7 +250,7 @@ def upsert_chat_by_stock(
         user_id=user.user_id,
         title=room_title,
         stock_code=stock_code,
-        trash_can=TrashEnum.out,
+        trash_can=TrashEnum.out.value,
     )
     
     db.add(new_chat)

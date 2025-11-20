@@ -18,19 +18,22 @@ export type BackendChat = {
   trash_can: string
 }
 
-export async function getRoomByStock(stockCode: string): Promise<BackendChat> {
-  return apiFetch<BackendChat>(`/api/rooms/by-stock/${encodeURIComponent(stockCode)}`, {
-    method: 'GET',
-  })
+export type ChatUpsertResponse = {
+  chat_id: number
+  title: string
+  stock_code: string
+  existed: boolean
 }
 
-export async function createRoom(params: {
-  title: string
-  stock_code?: string | null
-}): Promise<BackendChat> {
-  return apiFetch<BackendChat>(`/api/rooms`, {
-    method: 'POST',
-    body: JSON.stringify(params),
+export type ChatCompletionResponse = {
+  user_message: BackendMessage
+  assistant_message: BackendMessage
+}
+
+export async function upsertRoomByStock(stockCode: string, title?: string): Promise<ChatUpsertResponse> {
+  const query = title ? `?${new URLSearchParams({ title })}` : ''
+  return apiFetch<ChatUpsertResponse>(`/api/v1/chats/by-stock/${encodeURIComponent(stockCode)}${query}`, {
+    method: 'PUT',
   })
 }
 
@@ -44,14 +47,19 @@ export async function getMessages(
   })
 }
 
-export async function postMessage(
+export async function createChatCompletion(
   roomId: number,
-  content: string,
-): Promise<BackendMessage> {
-  return apiFetch<BackendMessage>(`/api/rooms/${roomId}/messages`, {
+  params: { content: string; system_prompt?: string },
+): Promise<ChatCompletionResponse> {
+  return apiFetch<ChatCompletionResponse>(`/api/rooms/${roomId}/chat-completions`, {
     method: 'POST',
-    body: JSON.stringify({ content }),
+    body: JSON.stringify(params),
   })
 }
 
+export async function listChats(): Promise<BackendChat[]> {
+  return apiFetch<BackendChat[]>(`/api/rooms`, {
+    method: 'GET',
+  })
+}
 
