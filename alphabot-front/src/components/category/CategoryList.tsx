@@ -6,12 +6,12 @@ import { useCategoryMutations } from '../../hooks/useCategoryMutations';
 import { AxiosError } from 'axios';
 import Button from '../Button/Button'; 
 
-// --- Styled Components ---
+// --- Styled Components (이전과 동일) ---
 
 const ListWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px; // 👈 카드 사이 간격s
+  gap: 16px;
 `;
 
 const CategoryCard = styled.div`
@@ -37,7 +37,7 @@ const CardContent = styled.div`
 const CardTitle = styled.h3`
   font-size: 18px;
   font-weight: 600;
-  color: #007bff; //  이미지의 파란색 제목
+  color: #007bff; //  이미지의 파란색 제목
   margin: 0 0 4px 0;
 `;
 
@@ -65,7 +65,7 @@ const SearchInput = styled.input`
 const NoResultsMessage = styled.div`
   padding: 40px 20px;
   text-align: center;
-  color: #333; /*  글자색 진하게 변경 */
+  color: #333; /*  글자색 진하게 변경 */
   font-size: 16px;
   font-style: italic;
 `;
@@ -141,7 +141,8 @@ export const CategoryList: React.FC<Props> = ({
       <ListWrapper>
         {categories.length > 0 ? (
           categories.map((cat) => (
-            <CategoryCard key={cat.category_id}>
+            // 👇 [수정 1] cat.category_id -> cat.id
+            <CategoryCard key={cat.id}> 
               <CardContent>
                 <CardTitle>{cat.title}</CardTitle>
                 <CardMeta>
@@ -161,10 +162,12 @@ export const CategoryList: React.FC<Props> = ({
                   <Button
                     variant="ghost" 
                     size="small"
-                    onClick={() => handleDelete(cat.category_id)}
+                    // 👇 [수정 2] cat.category_id -> cat.id
+                    onClick={() => handleDelete(cat.id)} 
                     disabled={
                       deleteMutation.isPending &&
-                      deleteMutation.variables === cat.category_id
+                      // 👇 [수정 3] cat.category_id -> cat.id
+                      deleteMutation.variables === cat.id 
                     }
                   >
                     삭제
