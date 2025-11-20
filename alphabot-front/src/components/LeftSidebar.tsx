@@ -1,39 +1,118 @@
-import styled from 'styled-components';
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import styled from 'styled-components'
+import * as chatApi from '@/api/chat'
 
-// Mock data for chat history
-const chatHistory = [
-  {
-    id: 1,
-    title: '📄 MSFT 관련된 내용 질문하고 싶은데...',
-    date: '2024.9.11'
-  },
-  {
-    id: 2,
-    title: '📊 AAPL 주식 분석 부탁드립니다',
-    date: '2024.9.10'
-  },
-  {
-    id: 3,
-    title: '💹 테슬라 투자 전략',
-    date: '2024.9.9'
-  },
-]
+interface StockLike {
+  code: string
+  name: string
+  exchange: string
+  currentPrice: number
+  change: number
+  changePercent: number
+}
 
-export default function LeftSidebar() {
-  const handleNewChat = () => {
-    console.log('새 채팅 시작')
+type Props = {
+  selectedStockCode?: string | null
+  onSelectStock?: (stock: StockLike) => void
+}
+
+export default function LeftSidebar({ selectedStockCode, onSelectStock }: Props) {
+  const [chats, setChats] = useState<chatApi.BackendChat[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [creating, setCreating] = useState(false)
+
+  const fetchChats = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await chatApi.listChats()
+      setChats(data)
+    } catch (err: any) {
+      console.error(err)
+      setError('채팅방 목록을 불러오지 못했습니다.')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchChats()
+  }, [fetchChats])
+
+  const visibleChats = useMemo(
+    () =>
+      chats.filter((chat) => chat.trash_can !== 'in' && chat.stock_code),
+    [chats],
+  )
+
+  const handleSelectChat = (chat: chatApi.BackendChat) => {
+    if (!chat.stock_code) {
+      return
+    }
+    onSelectStock?.({
+      code: chat.stock_code,
+      name: chat.title || chat.stock_code,
+      exchange: '',
+      currentPrice: 0,
+      change: 0,
+      changePercent: 0,
+    })
+  }
+
+  const handleNewChat = async () => {
+    const code = window.prompt('새로 대화를 시작할 종목 코드를 입력하세요.')
+    if (!code) {
+      return
+    }
+    const normalized = code.trim().toUpperCase()
+    if (!normalized) return
+    try {
+      setCreating(true)
+      const resp = await chatApi.upsertRoomByStock(normalized, normalized)
+      await fetchChats()
+      onSelectStock?.({
+        code: resp.stock_code,
+        name: resp.title,
+        exchange: '',
+        currentPrice: 0,
+        change: 0,
+        changePercent: 0,
+      })
+    } catch (err: any) {
+      console.error(err)
+      const message =
+        err?.status === 400
+          ? '유효한 종목 코드를 입력해주세요.'
+          : '새 채팅방을 만들지 못했습니다.'
+      setError(message)
+      alert(message)
+    } finally {
+      setCreating(false)
+    }
   }
 
   return (
     <Sidebar>
-      <NewChatButton onClick={handleNewChat}>
-        + 새 채팅
+      <NewChatButton onClick={handleNewChat} disabled={creating}>
+        {creating ? '생성 중...' : '+ 새 채팅'}
       </NewChatButton>
-      
-      {chatHistory.map((chat) => (
-        <ChatCard key={chat.id}>
-          <ChatTitle>{chat.title}</ChatTitle>
-          <ChatDate>{chat.date}</ChatDate>
+      {loading && <Placeholder>채팅방을 불러오는 중...</Placeholder>}
+      {error && <ErrorBanner role="alert">{error}</ErrorBanner>}
+      {!loading && visibleChats.length === 0 && (
+        <Placeholder>진행 중인 채팅이 없습니다.</Placeholder>
+      )}
+      {visibleChats.map((chat) => (
+        <ChatCard
+          key={chat.chat_id}
+          onClick={() => handleSelectChat(chat)}
+          data-selected={
+            chat.stock_code &&
+            chat.stock_code.toUpperCase() === selectedStockCode?.toUpperCase()
+          }
+        >
+          <ChatTitle>{chat.title || chat.stock_code}</ChatTitle>
+          <ChatMeta>{chat.stock_code}</ChatMeta>
         </ChatCard>
       ))}
     </Sidebar>
@@ -88,7 +167,7 @@ const NewChatButton = styled.button`
   }
 `;
 
-const ChatCard = styled.div`
+const ChatCard = styled.button`
   background: #f7f7f8;
   border: 1px solid #e5e5e5;
   border-radius: 8px;
@@ -101,6 +180,31 @@ const ChatCard = styled.div`
     border-color: #d0d0d0;
     transform: translateX(2px);
   }
+  &[data-selected='true'] {
+    border-color: #4169e1;
+    background: #eaf0ff;
+  }
+`;
+
+const Placeholder = styled.div`
+  padding: 16px;
+  font-size: 13px;
+  color: #8e8ea0;
+  text-align: center;
+`;
+
+const ErrorBanner = styled.div`
+  padding: 12px 14px;
+  background: #fee;
+  color: #c33;
+  border-radius: 8px;
+  font-size: 13px;
+`;
+
+const ChatMeta = styled.div`
+  margin-top: 4px;
+  font-size: 12px;
+  color: #8e8ea0;
 `;
 
 const ChatTitle = styled.p`
@@ -109,10 +213,4 @@ const ChatTitle = styled.p`
   color: #202123;
   line-height: 1.4;
   font-weight: 500;
-`;
-
-const ChatDate = styled.p`
-  margin: 0;
-  font-size: 11px;
-  color: #8e8ea0;
 `;

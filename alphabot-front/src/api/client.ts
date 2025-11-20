@@ -3,8 +3,11 @@ export type ApiError = Error & { status?: number }
 const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || ''
 
 function getAccessToken(): string | null {
-  // Adjust the storage key if your login implementation uses a different one
-  return window.localStorage.getItem('access_token')
+  // backwards compatibility: some pages still store under "authToken"
+  return (
+    window.localStorage.getItem('access_token') ??
+    window.localStorage.getItem('authToken')
+  )
 }
 
 export async function apiFetch<T>(

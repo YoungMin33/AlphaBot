@@ -1,9 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import type { ChatMessage } from '@/types/chat'
 import MessageItem from '@/components/chat/MessageItem'
 import ChatInput from '@/components/chat/ChatInput'
 import * as chatApi from '@/api/chat'
+
+const mapBackendMessage = (message: chatApi.BackendMessage): ChatMessage => ({
+  id: String(message.messages_id),
+  role: message.role === 'assistant' ? 'bot' : 'user',
+  text: message.content,
+})
 
 type Props = {
   stockCode?: string | null
@@ -15,8 +22,10 @@ export default function ChatArea({ stockCode }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [input, setInput] = useState('')
+  const [isSending, setIsSending] = useState(false)
+  const navigate = useNavigate()
 
-  const canChat = useMemo(() => Boolean(stockCode), [stockCode])
+  const canChat = Boolean(stockCode)
 
   useEffect(() => {
     let cancelled = false
@@ -25,42 +34,27 @@ export default function ChatArea({ stockCode }: Props) {
       setError(null)
       setMessages([])
       setRoomId(null)
+      if (!stockCode) {
+        setLoading(false)
+        return
+      }
       try {
-        if (!stockCode) {
-          return
-        }
-        // 1) Try to find existing room for stock
-        let room = await chatApi.getRoomByStock(stockCode)
-        // 2) If not found, create it
-        if (!room?.chat_id) {
-          room = await chatApi.createRoom({ title: stockCode, stock_code: stockCode })
-        }
+        const title = stockCode.trim() || stockCode
+        const room = await chatApi.upsertRoomByStock(stockCode, title)
         if (cancelled) return
         setRoomId(room.chat_id)
-        // 3) Load messages
         const msgs = await chatApi.getMessages(room.chat_id)
         if (cancelled) return
-        setMessages(
-          msgs.map((m) => ({
-            id: String(m.messages_id),
-            role: m.role === 'assistant' ? 'bot' : 'user',
-            text: m.content,
-          })),
-        )
+        setMessages(msgs.map(mapBackendMessage))
       } catch (e: any) {
-        // If 404 on getRoomByStock, create it
-        if (e?.status === 404 && stockCode) {
-          try {
-            const room = await chatApi.createRoom({ title: stockCode, stock_code: stockCode })
-            if (cancelled) return
-            setRoomId(room.chat_id)
-            setMessages([])
-          } catch (e2: any) {
-            if (cancelled) return
-            setError('채팅방 생성 실패')
-          }
+        if (cancelled) return
+        console.error(e)
+        if (e?.status === 401) {
+          setError('로그인이 필요합니다. 다시 로그인해주세요.')
+          navigate('/login', { replace: true })
+        } else if (e?.status === 404) {
+          setError('채팅방을 찾을 수 없습니다.')
         } else {
-          if (cancelled) return
           setError('채팅 데이터를 불러오지 못했습니다.')
         }
       } finally {
@@ -77,29 +71,45 @@ export default function ChatArea({ stockCode }: Props) {
     const trimmed = input.trim()
     if (!trimmed) return
     if (!roomId) {
-      setError('먼저 종목을 선택해 채팅방을 생성하세요.')
+      setError('채팅방을 준비 중입니다. 잠시만 기다려 주세요.')
       return
     }
-    // Optimistic update
+    if (isSending) return
+    setError(null)
+    setInput('')
+    setIsSending(true)
+    const tempUserId = `temp-user-${crypto.randomUUID()}`
+    const tempAssistantId = `temp-assistant-${crypto.randomUUID()}`
     setMessages((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), role: 'user', text: trimmed },
+      { id: tempUserId, role: 'user', text: trimmed },
+      { id: tempAssistantId, role: 'bot', text: '답변을 생성 중입니다...' },
     ])
-    setInput('')
     ;(async () => {
       try {
-        await chatApi.postMessage(roomId, trimmed)
-        // Optionally refresh from server to align roles/order
-        const msgs = await chatApi.getMessages(roomId)
-        setMessages(
-          msgs.map((m) => ({
-            id: String(m.messages_id),
-            role: m.role === 'assistant' ? 'bot' : 'user',
-            text: m.content,
-          })),
+        const response = await chatApi.createChatCompletion(roomId, { content: trimmed })
+        setMessages((prev) =>
+          prev.map((msg) => {
+            if (msg.id === tempUserId) {
+              return mapBackendMessage(response.user_message)
+            }
+            if (msg.id === tempAssistantId) {
+              return mapBackendMessage(response.assistant_message)
+            }
+            return msg
+          }),
         )
-      } catch {
-        setError('메시지 전송 실패')
+      } catch (e: any) {
+        console.error(e)
+        setMessages((prev) => prev.filter((msg) => msg.id !== tempUserId && msg.id !== tempAssistantId))
+        if (e?.status === 401) {
+          setError('로그인이 만료되었습니다. 다시 로그인해주세요.')
+          navigate('/login', { replace: true })
+        } else {
+          setError('메시지를 전송하지 못했습니다. 다시 시도해 주세요.')
+        }
+      } finally {
+        setIsSending(false)
       }
     })()
   }
@@ -138,7 +148,12 @@ export default function ChatArea({ stockCode }: Props) {
         ))}
       </MessagesArea>
       <InputWrapper>
-        <ChatInput value={input} onChange={setInput} onSubmit={send} disabled={!canChat} />
+        <ChatInput
+          value={input}
+          onChange={setInput}
+          onSubmit={send}
+          disabled={!canChat || loading || isSending}
+        />
       </InputWrapper>
     </Container>
   )

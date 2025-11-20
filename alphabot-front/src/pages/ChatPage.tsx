@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useNavigate, useParams } from 'react-router-dom';
 import ChatArea from '../components/ChatArea';
 import StockSearch from '../components/StockSearch';
 import LeftSidebar from '../components/LeftSidebar';
@@ -15,10 +16,39 @@ interface Stock {
 }
 
 const ChatPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { stockCode: stockCodeParam } = useParams<{ stockCode?: string }>();
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+
+  useEffect(() => {
+    if (!stockCodeParam) {
+      setSelectedStock(null);
+      return;
+    }
+    const normalized = stockCodeParam.toUpperCase();
+    setSelectedStock((prev) => {
+      if (prev && prev.code === normalized) {
+        return prev;
+      }
+      return {
+        code: normalized,
+        name: normalized,
+        exchange: '',
+        currentPrice: 0,
+        change: 0,
+        changePercent: 0,
+      };
+    });
+  }, [stockCodeParam]);
 
   const handleSelectStock = (stock: Stock) => {
     setSelectedStock(stock);
+    navigate(`/chat/${encodeURIComponent(stock.code)}`);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedStock(null);
+    navigate('/chat');
   };
 
   return (
@@ -40,7 +70,7 @@ const ChatPage: React.FC = () => {
                 <StockCode>{selectedStock.code}</StockCode>
                 <StockName>{selectedStock.name}</StockName>
               </StockBadge>
-              <ClearButton onClick={() => setSelectedStock(null)} title="종목 선택 해제">
+              <ClearButton onClick={handleClearSelection} title="종목 선택 해제">
                 ✕
               </ClearButton>
             </SelectedStockInfo>

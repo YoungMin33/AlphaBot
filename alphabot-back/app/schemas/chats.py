@@ -22,6 +22,20 @@ class MessageRead(BaseModel):
         from_attributes = True
 
 
+class ChatCompletionRequest(BaseModel):
+    content: str = Field(..., min_length=1, description="사용자가 입력한 메시지")
+    system_prompt: Optional[str] = Field(
+        default=None,
+        description="대화 맥락을 제어하기 위한 선택적 시스템 프롬프트",
+        max_length=2000,
+    )
+
+
+class ChatCompletionResponse(BaseModel):
+    user_message: MessageRead
+    assistant_message: MessageRead
+
+
 # 채팅방 정보 조회를 응답 위한 스키마
 # GET /api/rooms
 class ChatRead(BaseModel):
