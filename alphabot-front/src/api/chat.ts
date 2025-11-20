@@ -37,6 +37,16 @@ export async function upsertRoomByStock(stockCode: string, title?: string): Prom
   })
 }
 
+export async function updateChat(
+  chatId: number,
+  payload: Partial<Pick<BackendChat, 'title' | 'trash_can'>>,
+): Promise<BackendChat> {
+  return apiFetch<BackendChat>(`/api/rooms/${chatId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
 export async function getMessages(
   roomId: number,
   lastMessageId?: number,
