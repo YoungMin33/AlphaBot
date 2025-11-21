@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.crud.crud_base import CRUDBase
 # 1. models.category가 아닌 models.models에서 Category 모델 가져오기
-from app.models.models import Category
+from app.models.models import Category, Bookmark
 from app.schemas.category import CategoryCreate, CategoryUpdate
 
 
